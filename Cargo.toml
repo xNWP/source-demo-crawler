@@ -1,0 +1,17 @@
+[package]
+name = "source-demo-tool-crawler"
+version = "0.2.0"
+edition = "2021"
+authors = ["Brett 'xNWP' Anthony <nwpbusiness@gmail.com>"]
+description = "WIP: a gui tool for opening (editing planned) source engine demo files."
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/xNWP/source-demo-crawler/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+source-demo-tool = "0.2.1"
+eframe = { version = "0.20.1" }
+rfd = "0.10.0"
+egui_extras = "0.20.0"
