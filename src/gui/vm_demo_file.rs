@@ -114,7 +114,16 @@ impl DemoFileViewModel {
     }
 
     pub fn prev_tool(&mut self) -> bool {
-        self.set_active_tool(self.active_tool_index - 1)
+        // this underflow is fine, as it's handled by set_active_tool,
+        // but causes crashes in debug builds, so we'll catch it here
+        let index = {
+            if self.active_tool_index == 0 {
+                0
+            } else {
+                self.active_tool_index - 1
+            }
+        };
+        self.set_active_tool(index)
     }
 
     pub fn first_tool(&mut self) {
