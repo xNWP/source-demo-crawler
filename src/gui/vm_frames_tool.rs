@@ -57,7 +57,10 @@ impl FramesToolViewModel {
             }
 
             self.vm_packet_data = Some(packet_data);
+        } else {
+            self.vm_packet_data = None;
         }
+
         return true
     }
 
