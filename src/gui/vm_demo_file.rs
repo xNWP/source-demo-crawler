@@ -99,6 +99,16 @@ impl DemoFileViewModel {
         }
     }
 
+    pub fn set_active_tool_by_name(&mut self, name: &'static str) -> bool {
+        for i in 0..self.tools.len() {
+            let tool = &self.tools[i];
+            if tool.name == name {
+                return self.set_active_tool(i)
+            }
+        }
+        return false
+    }
+
     pub fn next_tool(&mut self) -> bool {
         self.set_active_tool(self.active_tool_index + 1)
     }
@@ -189,6 +199,10 @@ impl ViewModel for DemoFileViewModel {
         if let Event::SetFocus(focusable) = event {
             self.tools[self.active_tool_index].focus = focusable.clone();
             return true
+        }
+
+        if let Event::SetTool(tool_name) = event {
+            return self.set_active_tool_by_name(tool_name)
         }
 
         for tool in &mut self.tools {

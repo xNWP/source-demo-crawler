@@ -168,6 +168,16 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                     ui.set_height(avail_space.y);
 
                     if let Some(pm_vm) = self.vm_protobuf_message.as_mut() {
+                        if let Some(frame_indices) = &self.message_frame_indices {
+                            let frame_index = frame_indices[self.active_message.unwrap()];
+                            ui.horizontal(|ui| {
+                                ui.label(format!("Frame {}", frame_index + 1));
+                                if ui.button("Goto Frame").clicked() {
+                                    events.push(Event::SetTool("Frames"));
+                                    events.push(Event::SelectFrame(frame_index));
+                                }
+                            });
+                        }
                         pm_vm.draw(ui, events);
                     }
                 });
