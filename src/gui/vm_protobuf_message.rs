@@ -29,10 +29,10 @@ impl ProtobufMessageViewModel {
 
     fn update_field_data(&mut self) {
         let mut int_field_data: Vec<(String, ProtobufValue)> = self.message
-            .to_map_new()
+            .to_vec()
             .into_iter()
             .map(|(name, val)| {
-              (name.to_string(), val)  
+              (name.to_string(), val)
             })
             .collect();
 
@@ -90,7 +90,7 @@ impl ViewModel for ProtobufMessageViewModel {
             if ui.checkbox(&mut self.hide_none_values, "Hide None Values").changed() {
                 self.update_field_data();
             }
-            
+
             TableBuilder::new(ui)
             .column(Column::initial(FIELD_NAME_WIDTH).resizable(true))
             .column(Column::remainder())
