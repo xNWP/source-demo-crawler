@@ -17,7 +17,7 @@ impl PacketDataViewModel {
         let header = packet_data.header;
         Self {
             header,
-            vm_message_list: ProtobufMessageListViewModel::new("packet_data_messages", messages),
+            vm_message_list: ProtobufMessageListViewModel::new("packet_data_messages", messages, None),
         }
     }
 }

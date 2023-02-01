@@ -9,16 +9,17 @@ use source_demo_tool::demo_file::packet::MessageParseReturn;
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
     pub vm_protobuf_message: Option<ProtobufMessageViewModel>,
     pub messages: Vec<MessageParseReturn<MessageType>>,
+    pub message_frame_indices: Option<Vec<usize>>,
     active_message: Option<usize>,
     name: &'static str,
     b_scroll_next: bool,
 }
 
 impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageListViewModel<MessageType> {
-    pub fn new(name: &'static str, messages: Vec<MessageParseReturn<MessageType>>) -> Self {
+    pub fn new(name: &'static str, messages: Vec<MessageParseReturn<MessageType>>, message_frame_indices: Option<Vec<usize>>) -> Self {
         let vm_protobuf_message = None;
         let active_message = None;
-        Self { name, vm_protobuf_message, messages, active_message, b_scroll_next: true }
+        Self { name, vm_protobuf_message, messages, active_message, b_scroll_next: true, message_frame_indices }
     }
 
     pub fn get_active_message(&self) -> &Option<usize> {

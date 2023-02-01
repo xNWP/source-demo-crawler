@@ -10,9 +10,16 @@ pub struct UserMessagesToolViewModel {
 }
 
 impl UserMessagesToolViewModel {
-    pub fn new(user_messages: Vec<MessageParseReturn<UserMessage>>) -> Self {
+    pub fn new(user_messages: Vec<(usize, MessageParseReturn<UserMessage>)>) -> Self {
+        let mut messages = Vec::new();
+        let mut frame_indices = Vec::new();
+        for msg in user_messages {
+            frame_indices.push(msg.0);
+            messages.push(msg.1);
+        }
+
         let vm_messages
-            = ProtobufMessageListViewModel::new("user_messages", user_messages);
+            = ProtobufMessageListViewModel::new("user_messages", messages, Some(frame_indices));
 
         Self { vm_messages }
     }
