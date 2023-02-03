@@ -1727,7 +1727,7 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool-crawler"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "eframe",
  "egui_extras",
