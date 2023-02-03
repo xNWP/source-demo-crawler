@@ -9,17 +9,29 @@ use source_demo_tool::demo_file::packet::MessageParseReturn;
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
     pub vm_protobuf_message: Option<ProtobufMessageViewModel>,
     pub messages: Vec<MessageParseReturn<MessageType>>,
-    pub message_frame_indices: Option<Vec<usize>>,
     active_message: Option<usize>,
     name: &'static str,
     b_scroll_next: bool,
+    message_header_callback: Option<Box<
+        dyn Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
+    >>,
 }
 
 impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageListViewModel<MessageType> {
-    pub fn new(name: &'static str, messages: Vec<MessageParseReturn<MessageType>>, message_frame_indices: Option<Vec<usize>>) -> Self {
-        let vm_protobuf_message = None;
-        let active_message = None;
-        Self { name, vm_protobuf_message, messages, active_message, b_scroll_next: true, message_frame_indices }
+    pub fn new(name: &'static str, messages: Vec<MessageParseReturn<MessageType>>) -> Self {
+        Self {
+            name,
+            messages,
+            vm_protobuf_message: None,
+            active_message: None,
+            b_scroll_next: true,
+            message_header_callback: None,
+        }
+    }
+
+    pub fn set_message_header_callback<F>(&mut self, callback: F)
+    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>) + 'static {
+        self.message_header_callback = Some(Box::new(callback));
     }
 
     pub fn get_active_message(&self) -> &Option<usize> {
@@ -90,19 +102,19 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
 
 impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewModel for ProtobufMessageListViewModel<MessageType> {
     fn draw(&mut self, ui: &mut eframe::egui::Ui, events: &mut Vec<Event>) {
-        
+
         let avail_space = ui.available_size();
-        
+
         egui::Grid::new(ui.next_auto_id()).show(ui, |ui| {
             ui.push_id(1, |ui| {
                 let message_list_width = 200.0;
                 let message_detail_width = avail_space.x - message_list_width;
-                
+
                 // message list
                 ui.vertical(|ui| {
                     ui.set_width(message_list_width);
                     ui.set_height(avail_space.y);
-                    
+
                     let mut table_builder = TableBuilder::new(ui);
 
                     if self.b_scroll_next {
@@ -168,16 +180,12 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                     ui.set_height(avail_space.y);
 
                     if let Some(pm_vm) = self.vm_protobuf_message.as_mut() {
-                        if let Some(frame_indices) = &self.message_frame_indices {
-                            let frame_index = frame_indices[self.active_message.unwrap()];
-                            ui.horizontal(|ui| {
-                                ui.label(format!("Frame {}", frame_index + 1));
-                                if ui.button("Goto Frame").clicked() {
-                                    events.push(Event::SetTool("Frames"));
-                                    events.push(Event::SelectFrame(frame_index));
-                                }
-                            });
+                        if let Some(msg_header_cb) = &mut self.message_header_callback {
+                            let active_index = self.active_message.unwrap();
+                            let msg_ref = &self.messages[active_index];
+                            msg_header_cb(active_index, ui, events, msg_ref);
                         }
+
                         pm_vm.draw(ui, events);
                     }
                 });
@@ -186,6 +194,14 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
     }
 
     fn handle_event(&mut self, event: &Event) -> bool {
+        if let Event::SelectMessage(id, index) = event {
+            if *id == self.name {
+                return self.set_active_message(*index)
+            } else {
+                return false
+            }
+        }
+
         if let Some(pm_vm) = self.vm_protobuf_message.as_mut() {
             if pm_vm.handle_event(event) {
                 return true

@@ -1716,9 +1716,9 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "508f8713fa04da27c2584536756d2d7dbcdb7e01810f817c888b4f10ad7d9a9b"
+checksum = "71a115587398100c14e8689c0fdc9740eabe3b48cb4d91596d4627605cb3b2b6"
 dependencies = [
  "async-channel",
  "buf_redux",

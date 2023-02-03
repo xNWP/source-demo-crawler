@@ -1,25 +1,40 @@
 use super::{ Event, ViewModel, vm_protobuf_message_list::ProtobufMessageListViewModel };
 
 use source_demo_tool::demo_file::packet::{
-    MessageParseReturn,
     usermessage::UserMessage,
 };
+
+use source_demo_tool::demo_file::ParsedUserMessage;
 
 pub struct UserMessagesToolViewModel {
     pub vm_messages: ProtobufMessageListViewModel<UserMessage>,
 }
 
 impl UserMessagesToolViewModel {
-    pub fn new(user_messages: Vec<(usize, MessageParseReturn<UserMessage>)>) -> Self {
+    pub fn new(user_messages: Vec<ParsedUserMessage>) -> Self {
         let mut messages = Vec::new();
         let mut frame_indices = Vec::new();
+        let mut message_indices = Vec::new();
         for msg in user_messages {
-            frame_indices.push(msg.0);
-            messages.push(msg.1);
+            frame_indices.push(msg.frame_index);
+            message_indices.push(msg.message_index);
+            messages.push(msg.message_return);
         }
 
-        let vm_messages
-            = ProtobufMessageListViewModel::new("user_messages", messages, Some(frame_indices));
+        let mut vm_messages
+            = ProtobufMessageListViewModel::new("user_messages", messages);
+        vm_messages.set_message_header_callback(move |index, ui, events, _| {
+            ui.horizontal(|ui| {
+                let frame_index = frame_indices[index];
+                let msg_index = message_indices[index];
+                ui.label(format!("Frame: {}, Message: {}", frame_index + 1, msg_index + 1));
+                if ui.button("Goto").clicked() {
+                    events.push(Event::SetTool("Frames"));
+                    events.push(Event::SelectFrame(frame_index));
+                    events.push(Event::SelectMessage("packet_data_messages", msg_index));
+                }
+            });
+        });
 
         Self { vm_messages }
     }

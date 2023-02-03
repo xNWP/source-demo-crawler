@@ -110,6 +110,7 @@ pub enum Event {
     NewFile(PathBuf),
     SetFocus(Focusable),
     SelectFrame(usize),
+    SelectMessage(&'static str, usize),
     SetTool(&'static str),
 }
 
@@ -120,6 +121,7 @@ impl Display for Event {
             Event::NewFile(filepath) => f.write_fmt(format_args!("NewFile({})", filepath.to_str().unwrap())),
             Event::SetFocus(foc) => f.write_fmt(format_args!("SetFocus({:?})", foc)),
             Event::SelectFrame(index) => f.write_fmt(format_args!("SelectFrame({})", index)),
+            Event::SelectMessage(tool, index) => f.write_fmt(format_args!("SelectMessage({}, {})", tool, index)),
             Event::SetTool(tool_name) => f.write_fmt(format_args!("SetTool({})", tool_name)),
         }
     }

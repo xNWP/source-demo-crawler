@@ -7,8 +7,8 @@ use source_demo_tool::demo_file::packet::{PacketData, netmessage::NetMessage, se
 use eframe::egui;
 
 pub struct PacketDataViewModel {
-    pub header: packet::Header,  
-    pub vm_message_list: ProtobufMessageListViewModel<NetMessage>,  
+    pub header: packet::Header,
+    pub vm_message_list: ProtobufMessageListViewModel<NetMessage>,
 }
 
 impl PacketDataViewModel {
@@ -17,7 +17,7 @@ impl PacketDataViewModel {
         let header = packet_data.header;
         Self {
             header,
-            vm_message_list: ProtobufMessageListViewModel::new("packet_data_messages", messages, None),
+            vm_message_list: ProtobufMessageListViewModel::new("packet_data_messages", messages),
         }
     }
 }
