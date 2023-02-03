@@ -3,7 +3,7 @@ use super::{
     ViewModel,
     w_copyable_field::CopyableFieldWidget, vm_protobuf_message_list::ProtobufMessageListViewModel,
 };
-use source_demo_tool::demo_file::packet::{PacketData, netmessage::NetMessage, self};
+use source_demo_tool::demo_file::packet::{PacketData, netmessage::NetMessage, self, MessageParseReturn};
 use eframe::egui;
 
 pub struct PacketDataViewModel {
@@ -12,12 +12,16 @@ pub struct PacketDataViewModel {
 }
 
 impl PacketDataViewModel {
-    pub fn new(packet_data: PacketData) -> Self {
-        let messages = packet_data.network_messages;
+    pub fn new<F>(packet_data: PacketData, header_callback: F) -> Self
+    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>) + 'static {
         let header = packet_data.header;
+        let mut vm_message_list
+            = ProtobufMessageListViewModel::new("packet_data_messages", packet_data.network_messages);
+        vm_message_list.set_message_header_callback(header_callback);
+
         Self {
             header,
-            vm_message_list: ProtobufMessageListViewModel::new("packet_data_messages", messages),
+            vm_message_list,
         }
     }
 }

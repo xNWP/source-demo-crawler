@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::{
     Event,
     ViewModel,
@@ -5,7 +7,7 @@ use super::{
     TABLE_HEADER_HEIGHT, TABLE_ROW_HEIGHT, SELECTED_ITEM_COLOUR, Focusable
 };
 use source_demo_tool::demo_file::{
-    frame::{ Command, Frame },
+    frame::{ Command, Frame }, packet::netmessage::NetMessage,
 };
 use eframe::egui::{ self, CursorIcon, RichText, Sense };
 use egui_extras::{ TableBuilder, Column };
@@ -21,14 +23,52 @@ pub struct FramesToolViewModel {
     pub vm_frames_list: FramesListViewModel,
     pub vm_packet_data: Option<PacketDataViewModel>,
     last_message_index: Option<usize>,
+    frame_data: Vec<FrameData>,
+}
+
+#[derive(Clone)]
+struct FrameData {
+    user_message_index: Option<BTreeMap<usize, usize>>,
+}
+
+impl FrameData {
+    pub fn none() -> Self {
+        Self { user_message_index: None }
+    }
 }
 
 impl FramesToolViewModel {
     pub fn new(demo_frames: Vec<Frame>, tick_interval: f32) -> Self {
+        let mut frame_data = Vec::new();
+        let mut user_message_it = 0;
+        for f in &demo_frames {
+            let mut um_index = BTreeMap::new();
+
+            if let Command::Packet(pd) = &f.command {
+                for nmsg_it in 0..pd.network_messages.len() {
+                    let nmsg_return = &pd.network_messages[nmsg_it];
+                    if let Some(nmsg) = &nmsg_return.message {
+                        if let NetMessage::UserMessage(_) = nmsg {
+                            um_index.insert(nmsg_it, user_message_it);
+                            user_message_it += 1;
+                        }
+                    }
+                }
+            }
+
+            let mut fdata = FrameData::none();
+            if !um_index.is_empty() {
+                fdata.user_message_index = Some(um_index);
+            }
+
+            frame_data.push(fdata);
+        }
+
         Self {
             vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval),
             vm_packet_data: None,
             last_message_index: None,
+            frame_data,
         }
     }
 
@@ -48,7 +88,29 @@ impl FramesToolViewModel {
         self.vm_frames_list.set_active_frame(index);
         let active_message = &self.vm_frames_list.demo_frames[index];
         if let Command::Packet(pd) = &active_message.command {
-            let mut packet_data = PacketDataViewModel::new(pd.clone());
+            let frame_data = self.frame_data[index].clone();
+
+            let mut packet_data = PacketDataViewModel::new(
+                pd.clone(),
+                move |nmsg_index, ui, events, msg| {
+                    if let Some(nmsg) = &msg.message {
+                        if let NetMessage::UserMessage(_) = nmsg {
+                            let user_message_index = frame_data.user_message_index.as_ref().unwrap();
+                            let user_message_index = user_message_index[&nmsg_index];
+
+                            ui.horizontal(|ui| {
+                                ui.label(format!("User Message Index: {}", user_message_index));
+                                if ui.button("Goto").clicked() {
+                                    events.append(&mut vec![
+                                        Event::SetTool("User Messages"),
+                                        Event::SelectMessage("user_messages", user_message_index)
+                                    ]);
+                                }
+                            });
+                        }
+                    }
+                }
+            );
 
             if let Some(index) = self.last_message_index {
                 if index < packet_data.vm_message_list.messages.len() {

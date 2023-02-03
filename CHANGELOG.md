@@ -3,6 +3,7 @@
 ### Latest/Nightly (this branch)
 - Features
     - User messages now link out to there respective frame and message. #2
+    - User messages inside the frames tool now link to their respective entry in the user messages tool. #2
 - Bug Fixes
     - Fixed selecting non-packet frame not removing frame detail panel. closes #1
 - Internal
