@@ -1,10 +1,13 @@
-use super::{ Event, ViewModel, Focusable };
+use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT };
 use eframe::egui::{ self, RichText, Sense, CursorIcon };
 use egui_extras::{ Column, TableBuilder };
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
 use super::{ TABLE_ROW_HEIGHT, SELECTED_ITEM_COLOUR };
 use super::vm_protobuf_message::ProtobufMessageViewModel;
 use source_demo_tool::demo_file::packet::MessageParseReturn;
+
+const MESSAGE_INDEX_WIDTH: f32 = 60.0;
+const MESSAGE_LIST_WIDTH: f32 = 360.0;
 
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
     pub vm_protobuf_message: Option<ProtobufMessageViewModel>,
@@ -107,12 +110,11 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
 
         egui::Grid::new(ui.next_auto_id()).show(ui, |ui| {
             ui.push_id(1, |ui| {
-                let message_list_width = 200.0;
-                let message_detail_width = avail_space.x - message_list_width;
+                let message_detail_width = avail_space.x - MESSAGE_LIST_WIDTH;
 
                 // message list
                 ui.vertical(|ui| {
-                    ui.set_width(message_list_width);
+                    ui.set_width(MESSAGE_LIST_WIDTH);
                     ui.set_height(avail_space.y);
 
                     let mut table_builder = TableBuilder::new(ui);
@@ -124,7 +126,16 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                     }
 
                     table_builder.striped(true)
-                    .column(Column::exact(message_list_width))
+                    .column(Column::exact(MESSAGE_INDEX_WIDTH))
+                    .column(Column::exact(MESSAGE_LIST_WIDTH - MESSAGE_INDEX_WIDTH))
+                    .header(TABLE_HEADER_HEIGHT, |mut row| {
+                        row.col(|ui| {
+                            ui.label("Index");
+                        });
+                        row.col(|ui| {
+                            ui.label("Name");
+                        });
+                    })
                     .body(|body| {
                         body.rows(TABLE_ROW_HEIGHT, self.messages.len(), |index, mut row| {
                             let message_return = &self.messages[index];
@@ -147,6 +158,10 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                                     false
                                 }
                             };
+
+                            row.col(|ui| {
+                                ui.label(format!("{}", index + 1));
+                            });
 
                             let res = row.col(|ui| {
                                 if is_active {

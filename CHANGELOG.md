@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Protobuf messages (frames/user messages tool) now show their message index.
 
 ### v0.4.0
 - Features
