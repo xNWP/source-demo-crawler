@@ -3,6 +3,7 @@
 ### Latest/Nightly (this branch)
 - Features
     - Protobuf messages (frames/user messages tool) now show their message index.
+    - Added UI Scale (pixels per point/ppt) header. closes #5
 
 ### v0.4.0
 - Features

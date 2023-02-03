@@ -5,7 +5,7 @@ use super::{
     vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
-use eframe::egui::{ self, Key, Modifiers, Context };
+use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align};
 use std::thread::{ self, JoinHandle };
 
 const SHIFT_JUMP_RANGE: usize = 10;
@@ -14,6 +14,7 @@ pub struct MainViewModel {
     inner_view_model: Box<dyn ViewModel>,
     opening_file_join_handle: Option<JoinHandle<Result<DemoFile, String>>>,
     focused_vm: Focusable,
+    ui_ppt: f32,
 }
 
 impl MainViewModel {
@@ -22,6 +23,7 @@ impl MainViewModel {
             inner_view_model: Box::new(NoFilesOpenViewModel{}),
             opening_file_join_handle: None,
             focused_vm: Focusable::None,
+            ui_ppt: 1.0,
         }
     }
 
@@ -239,7 +241,33 @@ impl ViewModel for MainViewModel {
 
         self.handle_keyboard_events(ui.ctx(), events);
 
-        self.inner_view_model.draw(ui, events);
+        let mut ui_scale = self.ui_ppt;
+        ui.vertical(|ui| {
+            let avail_width = ui.available_width();
+
+            egui::Grid::new("main_ui_header_grid")
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.set_width(avail_width / 2.0);
+                    // nothing for now
+                });
+                ui.with_layout(
+                    Layout::right_to_left(Align::Center),
+                    |ui| {
+                        ui.set_width(avail_width / 2.0);
+                        ui.add_space(20.0);
+                        if ui.add(egui::Slider::new(&mut ui_scale, 0.75..=2.0))
+                        .drag_released() {
+                            self.ui_ppt = ui_scale;
+                        }
+                        ui.label("UI Scale (ppt)");
+                });
+            });
+            ui.separator();
+            self.inner_view_model.draw(ui, events);
+        });
+
+        ui.ctx().set_pixels_per_point(self.ui_ppt);
     }
 
     fn handle_event(&mut self, event: &Event) -> bool {
