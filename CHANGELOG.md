@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.4.0
 - Features
     - User messages now link out to there respective frame and message. #2
     - User messages inside the frames tool now link to their respective entry in the user messages tool. #2
