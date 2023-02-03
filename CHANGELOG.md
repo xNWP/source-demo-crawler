@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Internal
+    - set dependency RFD version to 0.11.0 
 
 ## v0.4.1
 - Features
