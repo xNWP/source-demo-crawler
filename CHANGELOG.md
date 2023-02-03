@@ -4,7 +4,7 @@
 - Internal
     - set dependency RFD version to 0.11.0 
 
-## v0.4.1
+### v0.4.1
 - Features
     - Protobuf messages (frames/user messages tool) now show their message index.
     - Added UI Scale (pixels per point/ppt) header. closes #5
