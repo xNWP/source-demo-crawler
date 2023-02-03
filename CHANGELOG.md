@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Added Server Info tool. close #3
 - Internal
     - set dependency RFD version to 0.11.0 
 

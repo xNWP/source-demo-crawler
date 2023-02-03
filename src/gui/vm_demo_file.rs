@@ -1,9 +1,11 @@
 use super::{
     ViewModel,
     Event,
+    Focusable,
     vm_header_tool::HeaderToolViewModel,
     vm_frames_tool::FramesToolViewModel,
-    vm_user_messages_tool::UserMessagesToolViewModel, Focusable,
+    vm_user_messages_tool::UserMessagesToolViewModel,
+    vm_server_info_tool::ServerInfoViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
 use eframe::{
@@ -54,10 +56,20 @@ impl DemoFileViewModel {
         };
         let frames = demo_file.frames.clone();
         let user_messages = demo_file.get_user_messages();
+        let server_info = match demo_file.get_server_info() {
+            Some(si) => Some(si.clone()),
+            None => None
+        };
+
         let tools: Vec<DemoFileTools> = vec![
             DemoFileTools {
                 name: "Header",
                 vm: Box::new(HeaderToolViewModel::new(header)),
+                focus: Focusable::None,
+            },
+            DemoFileTools {
+                name: "Server Info",
+                vm: Box::new(ServerInfoViewModel::new(server_info)),
                 focus: Focusable::None,
             },
             DemoFileTools {
