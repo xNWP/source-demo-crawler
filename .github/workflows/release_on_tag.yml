@@ -15,9 +15,6 @@ jobs:
       matrix:
         os: [windows-latest]
         include:
-          - os: ubuntu-latest
-            tag: ubuntu
-            path: package/*
           - os: windows-latest
             tag: windows
             path: package\*
