@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.4.2
 - Features
     - Added Server Info tool. close #3
 - Internal
