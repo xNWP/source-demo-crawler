@@ -5,7 +5,7 @@ use super::{
     vm_header_tool::HeaderToolViewModel,
     vm_frames_tool::FramesToolViewModel,
     vm_user_messages_tool::UserMessagesToolViewModel,
-    vm_server_info_tool::ServerInfoViewModel,
+    vm_server_info_tool::ServerInfoViewModel, vm_game_events_tool::GameEventsToolViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
 use eframe::{
@@ -60,6 +60,7 @@ impl DemoFileViewModel {
             Some(si) => Some(si.clone()),
             None => None
         };
+        let game_events = demo_file.get_full_game_events();
 
         let tools: Vec<DemoFileTools> = vec![
             DemoFileTools {
@@ -81,6 +82,11 @@ impl DemoFileViewModel {
                 name: "User Messages",
                 vm: Box::new(UserMessagesToolViewModel::new(user_messages)),
                 focus: Focusable::ProtobufMessageListViewModel("user_messages"),
+            },
+            DemoFileTools {
+                name: "Game Events",
+                vm: Box::new(GameEventsToolViewModel::new(game_events)),
+                focus: Focusable::None,
             },
         ];
 

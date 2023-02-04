@@ -16,6 +16,7 @@ mod vm_packet_data;
 mod vm_user_messages_tool;
 mod vm_protobuf_message_list;
 mod vm_server_info_tool;
+mod vm_game_events_tool;
 // widgets: small tools for displaying common gui components.
 mod w_copyable_field;
 
