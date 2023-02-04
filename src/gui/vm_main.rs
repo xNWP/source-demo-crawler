@@ -9,6 +9,7 @@ use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align};
 use std::thread::{ self, JoinHandle };
 
 const SHIFT_JUMP_RANGE: usize = 10;
+const INITIAL_UI_SCALE: f32 = 1.15;
 
 pub struct MainViewModel {
     inner_view_model: Box<dyn ViewModel>,
@@ -23,7 +24,7 @@ impl MainViewModel {
             inner_view_model: Box::new(NoFilesOpenViewModel{}),
             opening_file_join_handle: None,
             focused_vm: Focusable::None,
-            ui_ppt: 1.0,
+            ui_ppt: INITIAL_UI_SCALE,
         }
     }
 
