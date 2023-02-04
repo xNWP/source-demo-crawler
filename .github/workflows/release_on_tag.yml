@@ -1,0 +1,63 @@
+name: Create Draft Release On Tag
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-release:
+    name: Build Release Files
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            tag: ubuntu
+            path: package/*
+          - os: windows-latest
+            tag: windows
+            path: package\*
+            ext: .exe
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Install Stable Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - run: mkdir package
+      - run: mv -v target/release/source-demo-tool-crawler${{ matrix.ext }} package
+      - run: mv -v README.md package
+      - run: mv -v CHANGELOG.md package
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: source-demo-tool-crawler_${{ github.ref_name }}_${{ matrix.tag }}
+          path: ${{ matrix.path }}
+  draft-release:
+    name: Create Draft Release
+    runs-on: ubuntu-latest
+    needs: build-release
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+      - run: ls -lR
+      - run: zip -r source-demo-tool-crawler_${{ github.ref_name }}_ubuntu.zip source-demo-tool-crawler_${{ github.ref_name }}_ubuntu
+      - run: zip -r source-demo-tool-crawler_${{ github.ref_name }}_windows.zip source-demo-tool-crawler_${{ github.ref_name }}_windows
+      - run: ls -lR
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: Source Demo Tool ${{ github.ref_name }}
+          files: |
+            *.zip
