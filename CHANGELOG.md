@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Game Events now link from frames to individual entries in the Game Events Tool and vice-versa, closes #13.
 
 ### v0.5.1
 - Features

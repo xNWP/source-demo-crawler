@@ -111,6 +111,7 @@ pub enum Event {
     SelectFrame(usize),
     SelectMessage(&'static str, usize),
     SetTool(&'static str),
+    SelectGameEvent(usize),
 }
 
 impl Display for Event {
@@ -122,6 +123,7 @@ impl Display for Event {
             Event::SelectFrame(index) => f.write_fmt(format_args!("SelectFrame({})", index)),
             Event::SelectMessage(tool, index) => f.write_fmt(format_args!("SelectMessage({}, {})", tool, index)),
             Event::SetTool(tool_name) => f.write_fmt(format_args!("SetTool({})", tool_name)),
+            Event::SelectGameEvent(index) => f.write_fmt(format_args!("SelectGameEvent({})", index)),
         }
     }
 }

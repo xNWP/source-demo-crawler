@@ -27,11 +27,15 @@ pub struct FramesToolViewModel {
 #[derive(Clone)]
 struct FrameData {
     user_message_index: Option<BTreeMap<usize, usize>>,
+    game_event_index: Option<BTreeMap<usize, usize>>,
 }
 
 impl FrameData {
     pub fn none() -> Self {
-        Self { user_message_index: None }
+        Self {
+            user_message_index: None,
+            game_event_index: None,
+        }
     }
 }
 
@@ -39,8 +43,10 @@ impl FramesToolViewModel {
     pub fn new(demo_frames: Vec<Frame>, tick_interval: f32) -> Self {
         let mut frame_data = Vec::new();
         let mut user_message_it = 0;
+        let mut game_event_it = 0;
         for f in &demo_frames {
             let mut um_index = BTreeMap::new();
+            let mut ge_index = BTreeMap::new();
 
             if let Command::Packet(pd) = &f.command {
                 for nmsg_it in 0..pd.network_messages.len() {
@@ -49,6 +55,10 @@ impl FramesToolViewModel {
                         if let NetMessage::UserMessage(_) = nmsg {
                             um_index.insert(nmsg_it, user_message_it);
                             user_message_it += 1;
+                        } else
+                        if let NetMessage::GameEvent(_) = nmsg {
+                            ge_index.insert(nmsg_it, game_event_it);
+                            game_event_it += 1;
                         }
                     }
                 }
@@ -57,6 +67,9 @@ impl FramesToolViewModel {
             let mut fdata = FrameData::none();
             if !um_index.is_empty() {
                 fdata.user_message_index = Some(um_index);
+            }
+            if !ge_index.is_empty() {
+                fdata.game_event_index = Some(ge_index);
             }
 
             frame_data.push(fdata);
@@ -102,6 +115,20 @@ impl FramesToolViewModel {
                                     events.append(&mut vec![
                                         Event::SetTool("User Messages"),
                                         Event::SelectMessage("user_messages", user_message_index)
+                                    ]);
+                                }
+                            });
+                        } else
+                        if let NetMessage::GameEvent(_) = nmsg {
+                            let game_event_index = frame_data.game_event_index.as_ref().unwrap();
+                            let game_event_index = game_event_index[&nmsg_index];
+
+                            ui.horizontal(|ui| {
+                                ui.label(format!("Game Event Index: {}", game_event_index));
+                                if ui.button("Goto").clicked() {
+                                    events.append(&mut vec![
+                                        Event::SetTool("Game Events"),
+                                        Event::SelectGameEvent(game_event_index)
                                     ]);
                                 }
                             });

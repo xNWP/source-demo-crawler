@@ -221,12 +221,38 @@ impl ViewModel for GameEventsToolViewModel {
                     ui.set_width(avail_width - event_list_width);
                     ui.set_height(table_height);
 
+                    let event = &self.game_events[self.active_index.unwrap()];
+                    ui.horizontal(|ui| {
+                        ui.label(format!(
+                            "Frame: {}, Message: {}",
+                            event.frame_index + 1,
+                            event.message_index + 1
+                        ));
+                        if ui.button("Goto").clicked() {
+                            events.append(&mut vec![
+                                Event::SetTool("Frames"),
+                                Event::SelectFrame(event.frame_index),
+                                Event::SelectMessage("packet_data_messages", event.message_index)
+                            ]);
+                        }
+                    });
+
                     ui.push_id(ui.next_auto_id(), |ui| {
                         vm_detail.draw(ui, events);
                     });
                 });
             }
         });
+    }
+
+    fn handle_event(&mut self, event: &Event) -> bool {
+        match event {
+            Event::SelectGameEvent(index) => {
+                self.set_active_index(*index);
+                true
+            },
+            _ => false
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any { self }
