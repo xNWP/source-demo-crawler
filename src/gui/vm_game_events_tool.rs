@@ -1,11 +1,8 @@
-use super::{ Event, ViewModel, TABLE_HEADER_HEIGHT, TABLE_ROW_HEIGHT, TABLE_BOTTOM_MARGIN, TABLE_SELECTED_ITEM_COLOUR, Focusable, vm_demo_file::tick_to_time_string };
+use super::{ Event, ViewModel, Focusable, vm_demo_file::tick_to_time_string, table_constants };
 use eframe::egui::{self, Sense, CursorIcon, RichText};
 use source_demo_tool::demo_file::{FullGameEvent, FullGameEventKey, FullGameEventKeyType};
 use egui_extras::{ TableBuilder, Column };
 
-const EVENT_LIST_INDEX_WIDTH: f32 = 60.0;
-const EVENT_LIST_TICK_WIDTH: f32 = 80.0;
-const EVENT_LIST_TIME_WIDTH: f32 = 110.0;
 const EVENT_LIST_MIN_WIDTH: f32 = 360.0;
 const EVENT_LIST_MAX_WIDTH: f32 = 500.0;
 const DETAIL_LIST_MIN_WIDTH: f32 = 300.0;
@@ -86,7 +83,7 @@ impl ViewModel for GameEventsToolViewModel {
     fn draw(&mut self, ui: &mut egui::Ui, events: &mut Vec<Event>) {
         let avail_width = ui.available_width();
         let avail_height = ui.available_height();
-        let table_height = avail_height - TABLE_BOTTOM_MARGIN;
+        let table_height = avail_height - table_constants::BOTTOM_MARGIN;
         ui.set_width(avail_width);
         ui.set_height(avail_height);
 
@@ -122,11 +119,11 @@ impl ViewModel for GameEventsToolViewModel {
                 }
 
                 table_builder.striped(true)
-                .column(Column::exact(EVENT_LIST_INDEX_WIDTH))
-                .column(Column::exact(EVENT_LIST_TICK_WIDTH))
-                .column(Column::exact(EVENT_LIST_TIME_WIDTH))
+                .column(Column::exact(table_constants::COL_INDEX_WIDTH))
+                .column(Column::exact(table_constants::COL_TICK_WIDTH))
+                .column(Column::exact(table_constants::COL_TIME_WIDTH))
                 .column(Column::remainder())
-                .header(TABLE_HEADER_HEIGHT, |mut row| {
+                .header(table_constants::HEADER_HEIGHT, |mut row| {
                     row.col(|ui| {
                         ui.label("Index");
                     });
@@ -142,7 +139,7 @@ impl ViewModel for GameEventsToolViewModel {
                 })
                 .body(|body| {
                     body.rows(
-                        TABLE_ROW_HEIGHT,
+                        table_constants::ROW_HEIGHT,
                         self.game_events.len(),
                         |index, mut row| {
                             let game_event = &self.game_events[index];
@@ -157,7 +154,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
-                                        .color(TABLE_SELECTED_ITEM_COLOUR)
+                                        .color(table_constants::SELECTED_ITEM_COLOUR)
                                     );
                                 } else {
                                     ui.label(text);
@@ -168,7 +165,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
-                                        .color(TABLE_SELECTED_ITEM_COLOUR)
+                                        .color(table_constants::SELECTED_ITEM_COLOUR)
                                     );
                                 } else {
                                     ui.label(text);
@@ -182,7 +179,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
-                                        .color(TABLE_SELECTED_ITEM_COLOUR)
+                                        .color(table_constants::SELECTED_ITEM_COLOUR)
                                     );
                                 } else {
                                     ui.label(text);
@@ -197,7 +194,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
-                                        .color(TABLE_SELECTED_ITEM_COLOUR)
+                                        .color(table_constants::SELECTED_ITEM_COLOUR)
                                     );
                                 } else {
                                     ui.label(text);
@@ -258,7 +255,7 @@ impl ViewModel for GameEventKeysViewModel {
         .column(Column::exact(DETAIL_LIST_TYPE_WIDTH))
         .column(Column::initial(DETAIL_LIST_NAME_WIDTH).resizable(true))
         .column(Column::remainder())
-        .header(TABLE_HEADER_HEIGHT, |mut row| {
+        .header(table_constants::HEADER_HEIGHT, |mut row| {
             row.col(|ui| {
                 ui.label("Type");
             });
@@ -271,7 +268,7 @@ impl ViewModel for GameEventKeysViewModel {
         })
         .body(|body| {
             body.rows(
-                TABLE_ROW_HEIGHT,
+                table_constants::ROW_HEIGHT,
                 self.keys.len(),
                 |index, mut row| {
                     let key_ref = &self.keys[index];

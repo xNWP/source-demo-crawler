@@ -1,6 +1,6 @@
 use std::{fmt::Display, path::PathBuf, any::Any};
 
-use eframe::egui::{ self, Color32 };
+use eframe::egui;
 
 // view models: contains our domain data, additionally state
 //     logic for rendering each component, the view is the draw function
@@ -19,12 +19,6 @@ mod vm_server_info_tool;
 mod vm_game_events_tool;
 // widgets: small tools for displaying common gui components.
 mod w_copyable_field;
-
-pub const TABLE_HEADER_HEIGHT: f32 = 25.0;
-pub const TABLE_ROW_HEIGHT: f32 = 18.0;
-pub const TABLE_SELECTED_ITEM_COLOUR: Color32 = Color32::LIGHT_YELLOW;
-pub const TABLE_BOTTOM_MARGIN: f32 = 5.0;
-
 
 use vm_main::MainViewModel;
 
@@ -137,4 +131,14 @@ pub trait ViewModel {
     fn handle_event(&mut self, _event: &Event) -> bool { false }
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+pub mod table_constants {
+    pub const COL_TICK_WIDTH: f32 = 80.0;
+    pub const COL_INDEX_WIDTH: f32 = 70.0;
+    pub const COL_TIME_WIDTH: f32 = 120.0;
+    pub const HEADER_HEIGHT: f32 = 20.0;
+    pub const ROW_HEIGHT: f32 = 18.0;
+    pub const SELECTED_ITEM_COLOUR: eframe::egui::Color32 = eframe::egui::Color32::LIGHT_YELLOW;
+    pub const BOTTOM_MARGIN: f32 = 5.0;
 }

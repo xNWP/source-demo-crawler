@@ -6,7 +6,7 @@ use super::{
     Focusable,
     vm_packet_data::PacketDataViewModel,
     vm_demo_file::tick_to_time_string,
-    TABLE_HEADER_HEIGHT, TABLE_ROW_HEIGHT, TABLE_SELECTED_ITEM_COLOUR, TABLE_BOTTOM_MARGIN,
+    table_constants,
 };
 use source_demo_tool::demo_file::{
     frame::{ Command, Frame }, packet::netmessage::NetMessage,
@@ -14,9 +14,6 @@ use source_demo_tool::demo_file::{
 use eframe::egui::{ self, CursorIcon, RichText, Sense };
 use egui_extras::{ TableBuilder, Column };
 
-const FRAMES_FRAME_WIDTH: f32 = 80.0;
-const FRAMES_TICK_WIDTH: f32 = 80.0;
-const FRAMES_TIME_WIDTH: f32 = 120.0;
 const FRAMES_PLAYER_SLOT_WIDTH: f32 = 80.0;
 const MAX_FRAMES_LIST_WIDTH: f32 = 500.0;
 
@@ -182,7 +179,7 @@ impl ViewModel for FramesToolViewModel {
             // frames list
             ui.vertical(|ui| {
                 ui.set_width(frames_list_width);
-                ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
+                ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
                 self.vm_frames_list.draw(ui, events);
             });
 
@@ -190,7 +187,7 @@ impl ViewModel for FramesToolViewModel {
             if active_is_packet {
                 ui.vertical(|ui| {
                     ui.set_width(packet_data_width);
-                    ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
+                    ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
                     self.vm_packet_data.as_mut().unwrap().draw(ui, events);
                 });
             }
@@ -253,12 +250,12 @@ impl ViewModel for FramesListViewModel {
 
         table_builder
         .striped(true)
-        .column(Column::exact(FRAMES_FRAME_WIDTH))
-        .column(Column::exact(FRAMES_TICK_WIDTH))
-        .column(Column::exact(FRAMES_TIME_WIDTH))
+        .column(Column::exact(table_constants::COL_INDEX_WIDTH))
+        .column(Column::exact(table_constants::COL_TICK_WIDTH))
+        .column(Column::exact(table_constants::COL_TIME_WIDTH))
         .column(Column::exact(FRAMES_PLAYER_SLOT_WIDTH))
         .column(Column::remainder())
-        .header(TABLE_HEADER_HEIGHT, |mut row| {
+        .header(table_constants::HEADER_HEIGHT, |mut row| {
             row.col(|ui| {
                 ui.label("Frame");
             });
@@ -276,7 +273,7 @@ impl ViewModel for FramesListViewModel {
             });
             })
         .body(|body| {
-            body.rows(TABLE_ROW_HEIGHT,
+            body.rows(table_constants::ROW_HEIGHT,
                 self.demo_frames.len(), |index, mut row| {
                     let frame = &self.demo_frames[index];
                     let mut responses = Vec::new();
@@ -288,7 +285,7 @@ impl ViewModel for FramesListViewModel {
                     responses.push(row.col(|ui| {
                         let frame = format!("{}", index + 1);
                         if is_active_frame {
-                            ui.label(RichText::new(frame).color(TABLE_SELECTED_ITEM_COLOUR));
+                            ui.label(RichText::new(frame).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
                             ui.label(frame);
                         }
@@ -296,7 +293,7 @@ impl ViewModel for FramesListViewModel {
                     responses.push(row.col(|ui| {
                         let tick = format!("{}", frame.tick);
                         if is_active_frame {
-                            ui.label(RichText::new(tick).color(TABLE_SELECTED_ITEM_COLOUR));
+                            ui.label(RichText::new(tick).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
                             ui.label(tick);
                         }
@@ -304,7 +301,7 @@ impl ViewModel for FramesListViewModel {
                     responses.push(row.col(|ui| {
                         let time = tick_to_time_string(self.tick_interval, frame.tick);
                         if is_active_frame {
-                            ui.label(RichText::new(time).color(TABLE_SELECTED_ITEM_COLOUR));
+                            ui.label(RichText::new(time).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
                             ui.label(time);
                         }
@@ -312,7 +309,7 @@ impl ViewModel for FramesListViewModel {
                     responses.push(row.col(|ui| {
                         let player_slot = format!("{}", frame.player_slot);
                         if is_active_frame {
-                            ui.label(RichText::new(player_slot).color(TABLE_SELECTED_ITEM_COLOUR));
+                            ui.label(RichText::new(player_slot).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
                             ui.label(player_slot);
                         }
@@ -320,7 +317,7 @@ impl ViewModel for FramesListViewModel {
                     responses.push(row.col(|ui| {
                         let command = frame.command.get_command_str();
                         if is_active_frame {
-                            ui.label(RichText::new(command).color(TABLE_SELECTED_ITEM_COLOUR));
+                            ui.label(RichText::new(command).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
                             ui.label(command);
                         }

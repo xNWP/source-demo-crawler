@@ -1,19 +1,21 @@
 use super::vm_demo_file::tick_to_time_string;
-use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT, TABLE_BOTTOM_MARGIN };
+use super::{ Event, ViewModel, Focusable, table_constants };
 use eframe::egui::{ self, RichText, Sense, CursorIcon };
 use egui_extras::{ Column, TableBuilder };
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
-use super::{ TABLE_ROW_HEIGHT, TABLE_SELECTED_ITEM_COLOUR };
 use super::vm_protobuf_message::ProtobufMessageViewModel;
 use source_demo_tool::demo_file::packet::MessageParseReturn;
 
-const MESSAGE_INDEX_WIDTH: f32 = 60.0;
-const MESSAGE_TICK_WIDTH: f32 = 80.0;
-const MESSAGE_TIME_WIDTH: f32 = 110.0;
-const MESSAGE_LIST_FULL_MAX_WIDTH: f32 = 500.0;
+const MESSAGE_LIST_FULL_MAX_WIDTH: f32 = 600.0;
 const MESSAGE_LIST_FULL_MIN_WIDTH: f32 = 420.0;
-const MESSAGE_LIST_PARTIAL_MAX_WIDTH: f32 = MESSAGE_LIST_FULL_MAX_WIDTH - MESSAGE_TICK_WIDTH - MESSAGE_TIME_WIDTH;
-const MESSAGE_LIST_PARTIAL_MIN_WIDTH: f32 = MESSAGE_LIST_FULL_MIN_WIDTH - MESSAGE_TICK_WIDTH - MESSAGE_TIME_WIDTH;
+const MESSAGE_LIST_PARTIAL_MAX_WIDTH: f32
+    = MESSAGE_LIST_FULL_MAX_WIDTH
+    - table_constants::COL_TICK_WIDTH
+    - table_constants::COL_TIME_WIDTH;
+const MESSAGE_LIST_PARTIAL_MIN_WIDTH: f32
+    = MESSAGE_LIST_FULL_MIN_WIDTH
+    - table_constants::COL_TICK_WIDTH
+    - table_constants::COL_TIME_WIDTH;
 const MESSAGE_DETAIL_MIN_WIDTH: f32 = 420.0;
 
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
@@ -154,7 +156,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                 // message list
                 ui.vertical(|ui| {
                     ui.set_width(message_list_width);
-                    ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
+                    ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
 
                     let mut table_builder = TableBuilder::new(ui);
 
@@ -165,16 +167,16 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                     }
 
                     table_builder = table_builder.striped(true)
-                    .column(Column::exact(MESSAGE_INDEX_WIDTH));
+                    .column(Column::exact(table_constants::COL_INDEX_WIDTH));
 
                     if self.message_ticks.is_some() {
                         table_builder = table_builder
-                        .column(Column::exact(MESSAGE_TICK_WIDTH))
-                        .column(Column::exact(MESSAGE_TIME_WIDTH));
+                        .column(Column::exact(table_constants::COL_TICK_WIDTH))
+                        .column(Column::exact(table_constants::COL_TIME_WIDTH));
                     }
 
                     table_builder.column(Column::remainder())
-                    .header(TABLE_HEADER_HEIGHT, |mut row| {
+                    .header(table_constants::HEADER_HEIGHT, |mut row| {
                         row.col(|ui| {
                             ui.label("Index");
                         });
@@ -191,7 +193,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                         });
                     })
                     .body(|body| {
-                        body.rows(TABLE_ROW_HEIGHT, self.messages.len(), |index, mut row| {
+                        body.rows(table_constants::ROW_HEIGHT, self.messages.len(), |index, mut row| {
                             let message_return = &self.messages[index];
                             let name = {
                                 if message_return.message.is_some() {
@@ -217,7 +219,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                             responses.push(row.col(|ui| {
                                 let msg = format!("{}", index + 1);
                                 if is_active {
-                                    ui.label(RichText::new(msg).color(TABLE_SELECTED_ITEM_COLOUR));
+                                    ui.label(RichText::new(msg).color(table_constants::SELECTED_ITEM_COLOUR));
                                 } else {
                                     ui.label(msg);
                                 }
@@ -229,7 +231,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                                 responses.push(row.col(|ui| {
                                     let tick = tick.to_string();
                                     if is_active {
-                                        ui.label(RichText::new(tick).color(TABLE_SELECTED_ITEM_COLOUR));
+                                        ui.label(RichText::new(tick).color(table_constants::SELECTED_ITEM_COLOUR));
                                     } else {
                                         ui.label(tick);
                                     }
@@ -238,7 +240,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                                 responses.push(row.col(|ui| {
                                     let time = tick_to_time_string(self.tick_interval.unwrap(), tick);
                                     if is_active {
-                                        ui.label(RichText::new(time).color(TABLE_SELECTED_ITEM_COLOUR));
+                                        ui.label(RichText::new(time).color(table_constants::SELECTED_ITEM_COLOUR));
                                     } else {
                                         ui.label(time);
                                     }
@@ -247,7 +249,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
 
                             responses.push(row.col(|ui| {
                                 if is_active {
-                                    ui.label(RichText::new(name).color(TABLE_SELECTED_ITEM_COLOUR));
+                                    ui.label(RichText::new(name).color(table_constants::SELECTED_ITEM_COLOUR));
                                 } else {
                                     ui.label(name);
                                 }
@@ -277,7 +279,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                 // message detail
                 ui.vertical(|ui| {
                     ui.set_width(avail_space.x - message_list_width);
-                    ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
+                    ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
 
                     if let Some(pm_vm) = self.vm_protobuf_message.as_mut() {
                         if let Some(msg_header_cb) = &mut self.message_header_callback {

@@ -4,7 +4,6 @@ use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
 
 use egui_extras::{ TableBuilder, Column };
 
-use super::TABLE_ROW_HEIGHT;
 use source_demo_tool::demo_file::packet::protobuf_value::ProtobufValue;
 
 const FIELD_NAME_WIDTH: f32 = 200.0;
@@ -95,7 +94,7 @@ impl ViewModel for ProtobufMessageViewModel {
             .column(Column::initial(FIELD_NAME_WIDTH).resizable(true))
             .column(Column::remainder())
             .body(|body| {
-                body.rows(TABLE_ROW_HEIGHT, self.field_data.len(), |index, mut row| {
+                body.rows(super::table_constants::ROW_HEIGHT, self.field_data.len(), |index, mut row| {
                     let field = &self.field_data[index];
                     row.col(|ui| {
                         ui.label(&field.0);
