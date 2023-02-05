@@ -1,12 +1,15 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Internal
+    - WIP: Game Events Tool
+
+### v0.4.2
 - Features
     - Added Server Info tool. close #3
 - Internal
     - set dependency RFD version to 0.11.0
-    - WIP: Game Events Tool.
-
+  
 ### v0.4.1
 - Features
     - Protobuf messages (frames/user messages tool) now show their message index.
