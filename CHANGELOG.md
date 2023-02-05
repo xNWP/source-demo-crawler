@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.5.1
 - Features
     - User Messages Tool now lists tick and time.
 - Changes
