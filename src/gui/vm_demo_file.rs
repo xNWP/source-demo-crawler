@@ -80,7 +80,7 @@ impl DemoFileViewModel {
             },
             DemoFileTools {
                 name: "User Messages",
-                vm: Box::new(UserMessagesToolViewModel::new(user_messages)),
+                vm: Box::new(UserMessagesToolViewModel::new(user_messages, tick_interval)),
                 focus: Focusable::ProtobufMessageListViewModel("user_messages"),
             },
             DemoFileTools {

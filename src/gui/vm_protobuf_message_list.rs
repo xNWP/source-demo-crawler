@@ -1,3 +1,4 @@
+use super::vm_demo_file::tick_to_time_string;
 use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT };
 use eframe::egui::{ self, RichText, Sense, CursorIcon };
 use egui_extras::{ Column, TableBuilder };
@@ -7,7 +8,9 @@ use super::vm_protobuf_message::ProtobufMessageViewModel;
 use source_demo_tool::demo_file::packet::MessageParseReturn;
 
 const MESSAGE_INDEX_WIDTH: f32 = 60.0;
-const MESSAGE_LIST_WIDTH: f32 = 360.0;
+const MESSAGE_LIST_WIDTH: f32 = 480.0;
+const MESSAGE_TICK_WIDTH: f32 = 80.0;
+const MESSAGE_TIME_WIDTH: f32 = 110.0;
 
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
     pub vm_protobuf_message: Option<ProtobufMessageViewModel>,
@@ -18,6 +21,8 @@ pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> 
     message_header_callback: Option<Box<
         dyn Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
     >>,
+    message_ticks: Option<Vec<i32>>,
+    tick_interval: Option<f32>,
 }
 
 impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageListViewModel<MessageType> {
@@ -29,7 +34,14 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
             active_message: None,
             b_scroll_next: true,
             message_header_callback: None,
+            message_ticks: None,
+            tick_interval: None,
         }
+    }
+
+    pub fn set_tick_column(&mut self, ticks: Vec<i32>, tick_interval: f32) {
+        self.message_ticks = Some(ticks);
+        self.tick_interval = Some(tick_interval);
     }
 
     pub fn set_message_header_callback<F>(&mut self, callback: F)
@@ -125,13 +137,28 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                         self.b_scroll_next = false;
                     }
 
-                    table_builder.striped(true)
-                    .column(Column::exact(MESSAGE_INDEX_WIDTH))
-                    .column(Column::exact(MESSAGE_LIST_WIDTH - MESSAGE_INDEX_WIDTH))
+                    table_builder = table_builder.striped(true)
+                    .column(Column::exact(MESSAGE_INDEX_WIDTH));
+
+                    if self.message_ticks.is_some() {
+                        table_builder = table_builder
+                        .column(Column::exact(MESSAGE_TICK_WIDTH))
+                        .column(Column::exact(MESSAGE_TIME_WIDTH));
+                    }
+
+                    table_builder.column(Column::remainder())
                     .header(TABLE_HEADER_HEIGHT, |mut row| {
                         row.col(|ui| {
                             ui.label("Index");
                         });
+                        if self.message_ticks.is_some() {
+                            row.col(|ui| {
+                                ui.label("Tick");
+                            });
+                            row.col(|ui| {
+                                ui.label("Time");
+                            });
+                        }
                         row.col(|ui| {
                             ui.label("Name");
                         });
@@ -159,24 +186,55 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
                                 }
                             };
 
-                            row.col(|ui| {
-                                ui.label(format!("{}", index + 1));
-                            });
+                            let mut responses = Vec::new();
+                            responses.push(row.col(|ui| {
+                                let msg = format!("{}", index + 1);
+                                if is_active {
+                                    ui.label(RichText::new(msg).color(TABLE_SELECTED_ITEM_COLOUR));
+                                } else {
+                                    ui.label(msg);
+                                }
+                            }).1);
 
-                            let res = row.col(|ui| {
+                            if let Some(ticks) = &self.message_ticks {
+                                let tick = ticks[index];
+
+                                responses.push(row.col(|ui| {
+                                    let tick = tick.to_string();
+                                    if is_active {
+                                        ui.label(RichText::new(tick).color(TABLE_SELECTED_ITEM_COLOUR));
+                                    } else {
+                                        ui.label(tick);
+                                    }
+                                }).1);
+
+                                responses.push(row.col(|ui| {
+                                    let time = tick_to_time_string(self.tick_interval.unwrap(), tick);
+                                    if is_active {
+                                        ui.label(RichText::new(time).color(TABLE_SELECTED_ITEM_COLOUR));
+                                    } else {
+                                        ui.label(time);
+                                    }
+                                }).1);
+                            };
+
+                            responses.push(row.col(|ui| {
                                 if is_active {
                                     ui.label(RichText::new(name).color(TABLE_SELECTED_ITEM_COLOUR));
                                 } else {
                                     ui.label(name);
                                 }
-                            }).1.interact(Sense::click());
+                            }).1);
 
-                            if res.clicked() {
-                                self.set_active_message(index);
-                                events.push(Event::SetFocus(Focusable::ProtobufMessageListViewModel(self.name)));
+                            for res in responses {
+                                if res
+                                .interact(Sense::click())
+                                .on_hover_cursor(CursorIcon::PointingHand)
+                                .clicked() {
+                                    self.set_active_message(index);
+                                    events.push(Event::SetFocus(Focusable::ProtobufMessageListViewModel(self.name)));
+                                }
                             }
-
-                            res.on_hover_cursor(CursorIcon::PointingHand);
                         });
                     });
                 });

@@ -11,14 +11,16 @@ pub struct UserMessagesToolViewModel {
 }
 
 impl UserMessagesToolViewModel {
-    pub fn new(user_messages: Vec<ParsedUserMessage>) -> Self {
+    pub fn new(user_messages: Vec<ParsedUserMessage>, tick_interval: f32) -> Self {
         let mut messages = Vec::new();
         let mut frame_indices = Vec::new();
         let mut message_indices = Vec::new();
+        let mut ticks = Vec::new();
         for msg in user_messages {
             frame_indices.push(msg.frame_index);
             message_indices.push(msg.message_index);
             messages.push(msg.message_return);
+            ticks.push(msg.tick);
         }
 
         let mut vm_messages
@@ -35,6 +37,7 @@ impl UserMessagesToolViewModel {
                 }
             });
         });
+        vm_messages.set_tick_column(ticks, tick_interval);
 
         Self { vm_messages }
     }
