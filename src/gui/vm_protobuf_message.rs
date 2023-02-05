@@ -7,7 +7,7 @@ use egui_extras::{ TableBuilder, Column };
 use super::TABLE_ROW_HEIGHT;
 use source_demo_tool::demo_file::packet::protobuf_value::ProtobufValue;
 
-const FIELD_NAME_WIDTH: f32 = 240.0;
+const FIELD_NAME_WIDTH: f32 = 200.0;
 
 pub struct ProtobufMessageViewModel {
     pub message: Box<dyn ProtobufMessageEnumTraits>,

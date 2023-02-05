@@ -1,5 +1,5 @@
 use super::vm_demo_file::tick_to_time_string;
-use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT };
+use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT, TABLE_BOTTOM_MARGIN };
 use eframe::egui::{ self, RichText, Sense, CursorIcon };
 use egui_extras::{ Column, TableBuilder };
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
@@ -8,9 +8,13 @@ use super::vm_protobuf_message::ProtobufMessageViewModel;
 use source_demo_tool::demo_file::packet::MessageParseReturn;
 
 const MESSAGE_INDEX_WIDTH: f32 = 60.0;
-const MESSAGE_LIST_WIDTH: f32 = 480.0;
 const MESSAGE_TICK_WIDTH: f32 = 80.0;
 const MESSAGE_TIME_WIDTH: f32 = 110.0;
+const MESSAGE_LIST_FULL_MAX_WIDTH: f32 = 500.0;
+const MESSAGE_LIST_FULL_MIN_WIDTH: f32 = 420.0;
+const MESSAGE_LIST_PARTIAL_MAX_WIDTH: f32 = MESSAGE_LIST_FULL_MAX_WIDTH - MESSAGE_TICK_WIDTH - MESSAGE_TIME_WIDTH;
+const MESSAGE_LIST_PARTIAL_MIN_WIDTH: f32 = MESSAGE_LIST_FULL_MIN_WIDTH - MESSAGE_TICK_WIDTH - MESSAGE_TIME_WIDTH;
+const MESSAGE_DETAIL_MIN_WIDTH: f32 = 420.0;
 
 pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> {
     pub vm_protobuf_message: Option<ProtobufMessageViewModel>,
@@ -122,12 +126,35 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
 
         egui::Grid::new(ui.next_auto_id()).show(ui, |ui| {
             ui.push_id(1, |ui| {
-                let message_detail_width = avail_space.x - MESSAGE_LIST_WIDTH;
+                let message_list_width = {
+                    if self.vm_protobuf_message.is_none() {
+                        avail_space.x
+                    } else {
+                        let avail_width = avail_space.x - MESSAGE_DETAIL_MIN_WIDTH;
+                        if self.message_ticks.is_some() {
+                            if avail_width > MESSAGE_LIST_FULL_MAX_WIDTH {
+                                MESSAGE_LIST_FULL_MAX_WIDTH
+                            } else if avail_width < MESSAGE_LIST_FULL_MIN_WIDTH {
+                                MESSAGE_LIST_FULL_MIN_WIDTH
+                            } else {
+                                avail_width
+                            }
+                        } else {
+                            if avail_width > MESSAGE_LIST_PARTIAL_MAX_WIDTH {
+                                MESSAGE_LIST_PARTIAL_MAX_WIDTH
+                            } else if avail_width < MESSAGE_LIST_PARTIAL_MIN_WIDTH {
+                                MESSAGE_LIST_PARTIAL_MIN_WIDTH
+                            } else {
+                                avail_width
+                            }
+                        }
+                    }
+                };
 
                 // message list
                 ui.vertical(|ui| {
-                    ui.set_width(MESSAGE_LIST_WIDTH);
-                    ui.set_height(avail_space.y);
+                    ui.set_width(message_list_width);
+                    ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
 
                     let mut table_builder = TableBuilder::new(ui);
 
@@ -249,8 +276,8 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
 
                 // message detail
                 ui.vertical(|ui| {
-                    ui.set_width(message_detail_width);
-                    ui.set_height(avail_space.y);
+                    ui.set_width(avail_space.x - message_list_width);
+                    ui.set_height(avail_space.y - TABLE_BOTTOM_MARGIN);
 
                     if let Some(pm_vm) = self.vm_protobuf_message.as_mut() {
                         if let Some(msg_header_cb) = &mut self.message_header_callback {

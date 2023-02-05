@@ -1,8 +1,10 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
-- Feature
+- Features
     - User Messages Tool now lists tick and time.
+- Changes
+    - User Messages Tool ui now behaves closer to frames/game events too, closes #12
 - Internal
     - set source-demo-tool version to 0.5.0
 
