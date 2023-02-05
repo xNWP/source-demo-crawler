@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.5.0
 - Features
     - Added Game Events Tool
 - Internal
