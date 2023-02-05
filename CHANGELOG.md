@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Internal
+    - set source-demo-tool version to 0.5.0
 
 ### v0.5.0
 - Features
