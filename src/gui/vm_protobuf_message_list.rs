@@ -2,7 +2,7 @@ use super::{ Event, ViewModel, Focusable, TABLE_HEADER_HEIGHT };
 use eframe::egui::{ self, RichText, Sense, CursorIcon };
 use egui_extras::{ Column, TableBuilder };
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
-use super::{ TABLE_ROW_HEIGHT, SELECTED_ITEM_COLOUR };
+use super::{ TABLE_ROW_HEIGHT, TABLE_SELECTED_ITEM_COLOUR };
 use super::vm_protobuf_message::ProtobufMessageViewModel;
 use source_demo_tool::demo_file::packet::MessageParseReturn;
 
@@ -165,7 +165,7 @@ impl<MessageType: ProtobufMessageEnumTraits + ToString + Clone + 'static> ViewMo
 
                             let res = row.col(|ui| {
                                 if is_active {
-                                    ui.label(RichText::new(name).color(SELECTED_ITEM_COLOUR));
+                                    ui.label(RichText::new(name).color(TABLE_SELECTED_ITEM_COLOUR));
                                 } else {
                                     ui.label(name);
                                 }

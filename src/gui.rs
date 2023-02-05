@@ -22,7 +22,9 @@ mod w_copyable_field;
 
 pub const TABLE_HEADER_HEIGHT: f32 = 25.0;
 pub const TABLE_ROW_HEIGHT: f32 = 18.0;
-pub const SELECTED_ITEM_COLOUR: Color32 = Color32::LIGHT_YELLOW;
+pub const TABLE_SELECTED_ITEM_COLOUR: Color32 = Color32::LIGHT_YELLOW;
+pub const TABLE_BOTTOM_MARGIN: f32 = 5.0;
+
 
 use vm_main::MainViewModel;
 
@@ -105,6 +107,7 @@ pub enum Focusable {
     None,
     FramesListViewModel,
     ProtobufMessageListViewModel(&'static str),
+    GameEventsList,
 }
 
 pub enum Event {

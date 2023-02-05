@@ -1,8 +1,10 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Added Game Events Tool
 - Internal
-    - WIP: Game Events Tool
+    - set source-demo-tool version to 0.4.2 (doesn't break anything).
 
 ### v0.4.2
 - Features

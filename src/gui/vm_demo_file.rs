@@ -85,8 +85,8 @@ impl DemoFileViewModel {
             },
             DemoFileTools {
                 name: "Game Events",
-                vm: Box::new(GameEventsToolViewModel::new(game_events)),
-                focus: Focusable::None,
+                vm: Box::new(GameEventsToolViewModel::new(game_events, tick_interval)),
+                focus: Focusable::GameEventsList,
             },
         ];
 
@@ -242,4 +242,43 @@ impl ViewModel for DemoFileViewModel {
 
     fn as_any(&self) -> &dyn std::any::Any { self }
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
+}
+
+pub fn tick_to_time_string(tick_interval: f32, tick: i32) -> String {
+    let mut rval: String = "".into();
+    let seconds_per_tick: f64 = tick_interval as f64;
+    let mut seconds = seconds_per_tick * (tick as f64);
+
+    const ONE_MINUTE: f64 = 60.0;
+    const ONE_HOUR: f64 = 60.0 * ONE_MINUTE;
+
+    { // hours
+        let hours = seconds / ONE_HOUR;
+        let hours: u32 = hours as u32;
+        seconds -= hours as f64 * ONE_HOUR;
+
+        if hours > 0 {
+            rval += format!("{}h", hours).as_str();
+        }
+    }
+    { // minutes
+        let minutes = seconds / ONE_MINUTE;
+        let minutes: u32 = minutes as u32;
+        seconds -= minutes as f64 * ONE_MINUTE;
+
+        if !rval.is_empty() {
+            rval += format!("{:0>2}m", minutes).as_str();
+        } else if minutes > 0 {
+            rval += format!("{}m", minutes).as_str();
+        }
+    }
+    { // seconds
+        if !rval.is_empty() {
+            rval += format!("{:0>6.3}s", seconds).as_str();
+        } else {
+            rval += format!("{:.3}s", seconds).as_str();
+        }
+    }
+
+    rval
 }

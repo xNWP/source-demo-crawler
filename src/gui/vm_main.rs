@@ -2,7 +2,7 @@ use super::{
     Event, ViewModel, Focusable,
     vm_demo_file::DemoFileViewModel,
     vm_no_files_open::NoFilesOpenViewModel,
-    vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel,
+    vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
 use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align};
@@ -179,6 +179,47 @@ impl MainViewModel {
                 Focusable::ProtobufMessageListViewModel(s) => {
                     eprintln!("Unknown ProtobufMessageListViewModel focusable id: {}", s);
                 },
+                Focusable::GameEventsList => {
+                    let df_vm_res = self.inner_view_model
+                    .as_any_mut()
+                    .downcast_mut::<DemoFileViewModel>();
+
+                    if let Some(df_vm) = df_vm_res {
+                        let ge_vm_res = df_vm.get_active_tool()
+                        .as_any_mut()
+                        .downcast_mut::<GameEventsToolViewModel>();
+
+                        if let Some(ge_vm) = ge_vm_res {
+                            if b_pressed_arrow_dn {
+                                if b_ctrl {
+                                    ge_vm.last_message();
+                                } else if b_shift {
+                                    for _ in 0..SHIFT_JUMP_RANGE {
+                                        ge_vm.next_message();
+                                    }
+                                } else {
+                                    ge_vm.next_message();
+                                }
+                            }
+                            if b_pressed_arrow_up {
+                                if b_ctrl {
+                                    ge_vm.first_message();
+                                } else if b_shift {
+                                    for _ in 0..SHIFT_JUMP_RANGE {
+                                        ge_vm.prev_message();
+                                    }
+                                } else {
+                                    ge_vm.prev_message();
+                                }
+                            }
+                        } else {
+                            eprintln!("Focus was GameEventsList but no GameEventsToolViewModel present.");
+                        }
+                    } else {
+                        eprintln!("Focus was GameEventsList but no DemoFileViewModel present.");
+                    }
+
+                }
                 Focusable::None => {}, // do nothing
             }
         }
