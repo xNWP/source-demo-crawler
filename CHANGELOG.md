@@ -4,6 +4,7 @@
 - Features
     - Game Events now link from frames to individual entries in the Game Events Tool and vice-versa, closes #13.
     - Added filtering for User Messages, closes #10.
+    - Added filtering for Game Events, closes #15.
 - Internal
     - set source-demo-tool version to 0.7.1
 

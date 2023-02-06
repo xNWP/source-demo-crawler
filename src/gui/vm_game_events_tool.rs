@@ -1,5 +1,7 @@
+use std::collections::BTreeMap;
+
 use super::{ Event, ViewModel, Focusable, vm_demo_file::tick_to_time_string, table_constants };
-use eframe::egui::{self, Sense, CursorIcon, RichText};
+use eframe::{egui::{self, Sense, CursorIcon, RichText, Layout}, emath::Align};
 use source_demo_tool::demo_file::{FullGameEvent, FullGameEventKey, FullGameEventKeyType};
 use egui_extras::{ TableBuilder, Column };
 
@@ -10,72 +12,146 @@ const DETAIL_LIST_TYPE_WIDTH: f32 = 60.0;
 const DETAIL_LIST_NAME_WIDTH: f32 = 120.0;
 
 pub struct GameEventsToolViewModel {
-    game_events: Vec<FullGameEvent>,
+    game_events: BTreeMap<
+        String,
+        BTreeMap<usize, FullGameEvent>
+    >,
+    display_events: Vec<(usize, FullGameEvent)>,
     active_index: Option<usize>,
     vm_active_keys: Option<GameEventKeysViewModel>,
     b_scroll_next: bool,
     tick_interval: f32,
+    active_filter_index: usize,
+    filterable_list: Vec<String>,
+    filterable_data: Vec<(String, usize)>,
 }
 
 impl GameEventsToolViewModel {
-    pub fn new(game_events: Vec<FullGameEvent>, tick_interval: f32) -> Self {
+    pub fn new(game_events_vec: Vec<FullGameEvent>, tick_interval: f32) -> Self {
+        let mut filterable_data = BTreeMap::new(); 
+        let mut game_events = BTreeMap::new();
+
+        game_events.insert("None".to_owned(), BTreeMap::new());
+        for i in 0..game_events_vec.len() {
+            let ev = &game_events_vec[i];
+            filterable_data
+                .entry(ev.event_name.clone())
+                .and_modify(|k| *k += 1)
+                .or_insert(1 as usize);
+
+            game_events
+                .entry("None".to_owned())
+                .and_modify(|m| {
+                    m.insert(i, ev.clone());
+                });
+
+            game_events
+                .entry(ev.event_name.clone())
+                .and_modify(|m| {
+                    m.insert(i, ev.clone());
+                })
+                .or_insert({
+                    let mut m = BTreeMap::new();
+                    m.insert(i, ev.clone());
+                    m
+                });
+        }
+        let filterable_data: Vec<(String, usize)> = filterable_data.into_iter().collect();
+
+        let mut filterable_list = Vec::new();
+        filterable_list.push("None".to_owned());
+        for k in &filterable_data {
+            filterable_list.push(
+                format!(
+                    "{} ({})",
+                    k.0, k.1
+                )
+            );
+        }
+
+        let display_events
+            = game_events["None".into()].clone().into_iter().collect();
+
         Self {
             game_events,
             tick_interval,
+            filterable_list,
+            filterable_data,
+            display_events,
             active_index: None,
             vm_active_keys: None,
             b_scroll_next: true,
+            active_filter_index: 0,
         }
     }
 
     fn set_active_index(&mut self, index: usize) -> bool {
-        if index >= self.game_events.len() {
-            return false
+        for ev in &self.display_events {
+            if ev.0 == index {
+                self.b_scroll_next = true;
+                self.active_index = Some(index);
+                
+                let active_event = &ev.1;
+                let keys = active_event.event_keys.clone();
+                self.vm_active_keys = Some(
+                    GameEventKeysViewModel::new(keys)
+                );
+                return true
+            }
         }
-
-        self.active_index = Some(index);
-
-        let keys = self.game_events[index].event_keys.clone();
-        self.vm_active_keys = Some(
-            GameEventKeysViewModel::new(keys)
-        );
-
-        self.b_scroll_next = true;
-        true
+        false
     }
 
     pub fn first_message(&mut self) -> bool {
-        self.set_active_index(0)
+        self.set_active_index(self.display_events.first().unwrap().0)
     }
 
     pub fn last_message(&mut self) -> bool {
-        let mut index = self.game_events.len();
-        if index != 0 {
-            index -= 1;
-        }
-        self.set_active_index(index)
+        self.set_active_index(self.display_events.last().unwrap().0)
     }
 
     pub fn next_message(&mut self) -> bool {
-        let index = match self.active_index {
-            Some(i) => i + 1,
-            None => 0
-        };
-        self.set_active_index(index)
+        match self.active_index {
+            Some(_) => {
+                let mut b_capture_next = false;
+                let mut next_index = None;
+                for ev in &self.display_events {
+                    if b_capture_next {
+                        next_index = Some(ev.0);
+                        break
+                    }
+                    if ev.0 == self.active_index.unwrap() {
+                        b_capture_next = true
+                    }
+                }
+                if let Some(i) = next_index {
+                    self.set_active_index(i)
+                } else {
+                    false
+                }
+            },
+            None => self.first_message()
+        }
     }
 
     pub fn prev_message(&mut self) -> bool {
-        let index = match self.active_index {
-            Some(i) => {
-                if i == 0 {
-                    0
+        match &self.active_index {
+            Some(_) => {
+                let mut prev_index = None;
+                for ev in &self.display_events {
+                    if ev.0 == self.active_index.unwrap() {
+                        break
+                    }
+                    prev_index = Some(ev.0);
+                }
+                if let Some(i) = prev_index {
+                    self.set_active_index(i)
                 } else {
-                    i - 1
+                    false
                 }
             },
-            None => 0
-        };
-        self.set_active_index(index)
+            None => self.first_message()
+        }
     }
 }
 
@@ -111,11 +187,53 @@ impl ViewModel for GameEventsToolViewModel {
                 ui.set_width(event_list_width);
                 ui.set_height(table_height);
 
+                ui.with_layout(
+                    Layout::right_to_left(Align::TOP),
+                    |ui| {
+                        ui.add_space(20.0);
+
+                        if egui::ComboBox::new(
+                            ui.next_auto_id(),
+                            "Filter"
+                        ).width(200.0)
+                        .show_index(
+                            ui,
+                            &mut self.active_filter_index,
+                            self.filterable_list.len(),
+                            |i| self.filterable_list[i].clone()
+                        )
+                        .changed() {
+                            self.display_events = {
+                                if self.active_filter_index != 0 {
+                                    let ev_str = &self.filterable_data[self.active_filter_index - 1].0;
+                                    self.game_events[ev_str].clone().into_iter().collect()
+                                } else {
+                                    self.game_events["None".into()].clone().into_iter().collect()
+                                }
+                            };
+                            self.first_message();
+                        }
+                    }
+                );
+
                 let mut table_builder = TableBuilder::new(ui);
 
                 if self.b_scroll_next {
+                    // get real index
+                    let a_index = self.active_index.unwrap_or(0);
+                    let mut real_index = 0;
+                    for i in 0..self.display_events.len() {
+                        let ev = &self.display_events[i];
+                        if a_index == ev.0 {
+                            real_index = i;
+                            break
+                        }
+                    }
+                    table_builder = table_builder.scroll_to_row(
+                        real_index,
+                        None
+                    );
                     self.b_scroll_next = false;
-                    table_builder = table_builder.scroll_to_row(self.active_index.unwrap_or(0), None);
                 }
 
                 table_builder.striped(true)
@@ -140,17 +258,19 @@ impl ViewModel for GameEventsToolViewModel {
                 .body(|body| {
                     body.rows(
                         table_constants::ROW_HEIGHT,
-                        self.game_events.len(),
+                        self.display_events.len(),
                         |index, mut row| {
-                            let game_event = &self.game_events[index];
+                            let game_event = &self.display_events[index];
                             let mut responses = Vec::new();
+
+                            let real_index = game_event.0;
                             let is_active = match self.active_index {
-                                Some(a_index) => a_index == index,
+                                Some(a_index) => a_index == real_index,
                                 None => false
                             };
 
                             responses.push(row.col(|ui| {
-                                let text = format!("{}", index);
+                                let text = format!("{}", real_index);
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
@@ -161,7 +281,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 }
                             }).1);
                             responses.push(row.col(|ui| {
-                                let text = format!("{}", game_event.event_tick);
+                                let text = format!("{}", game_event.1.event_tick);
                                 if is_active {
                                     ui.label(
                                         RichText::new(text)
@@ -174,7 +294,7 @@ impl ViewModel for GameEventsToolViewModel {
                             responses.push(row.col(|ui| {
                                 let text = tick_to_time_string(
                                     self.tick_interval,
-                                    game_event.event_tick
+                                    game_event.1.event_tick
                                 );
                                 if is_active {
                                     ui.label(
@@ -188,8 +308,8 @@ impl ViewModel for GameEventsToolViewModel {
                             responses.push(row.col(|ui| {
                                 let text = format!(
                                     "{} ({})",
-                                    game_event.event_name,
-                                    game_event.event_id
+                                    game_event.1.event_name,
+                                    game_event.1.event_id
                                 );
                                 if is_active {
                                     ui.label(
@@ -206,7 +326,7 @@ impl ViewModel for GameEventsToolViewModel {
                                 .interact(Sense::click())
                                 .on_hover_cursor(CursorIcon::PointingHand)
                                 .clicked() {
-                                    self.set_active_index(index);
+                                    self.set_active_index(real_index);
                                     events.push(Event::SetFocus(Focusable::GameEventsList));
                                 }
                             }
@@ -221,7 +341,7 @@ impl ViewModel for GameEventsToolViewModel {
                     ui.set_width(avail_width - event_list_width);
                     ui.set_height(table_height);
 
-                    let event = &self.game_events[self.active_index.unwrap()];
+                    let event = &self.game_events["None".into()][&self.active_index.unwrap()];
                     ui.horizontal(|ui| {
                         ui.label(format!(
                             "Frame: {}, Message: {}",

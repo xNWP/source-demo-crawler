@@ -266,31 +266,32 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for Pro
                                     };
                                     self.first_message();
                                 }
-                            });
-                        }
-
-                        ui.end_row();
-                        let mut table_builder = TableBuilder::new(ui);
-
-                        if self.b_scroll_next {
-                            // get real index
-                            let a_index = self.active_message.unwrap_or(0);
-                            let mut real_index = 0;
-                            for i in 0..self.display_messages.len() {
-                                let msg = &self.display_messages[i];
-                                if a_index == msg.0 {
-                                    real_index = i;
-                                    break
-                                }
                             }
-                            table_builder = table_builder.scroll_to_row(
-                                real_index,
-                                None
-                            );
-                            self.b_scroll_next = false;
-                        }
+                        );
+                        ui.end_row();
+                    }
 
-                        table_builder = table_builder.striped(true)
+                    let mut table_builder = TableBuilder::new(ui);
+
+                    if self.b_scroll_next {
+                        // get real index
+                        let a_index = self.active_message.unwrap_or(0);
+                        let mut real_index = 0;
+                        for i in 0..self.display_messages.len() {
+                            let msg = &self.display_messages[i];
+                            if a_index == msg.0 {
+                                real_index = i;
+                                break
+                            }
+                        }
+                        table_builder = table_builder.scroll_to_row(
+                            real_index,
+                            None
+                        );
+                        self.b_scroll_next = false;
+                    }
+
+                    table_builder = table_builder.striped(true)
                     .column(Column::exact(table_constants::COL_INDEX_WIDTH));
 
                     if self.message_ticks.is_some() {
@@ -389,7 +390,7 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for Pro
                                 .interact(Sense::click())
                                 .on_hover_cursor(CursorIcon::PointingHand)
                                 .clicked() {
-                                    self.set_active_message(index);
+                                    self.set_active_message(real_index);
                                     events.push(Event::SetFocus(Focusable::ProtobufMessageListViewModel(self.name)));
                                 }
                             }
