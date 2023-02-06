@@ -3,6 +3,9 @@
 ### Latest/Nightly (this branch)
 - Features
     - Game Events now link from frames to individual entries in the Game Events Tool and vice-versa, closes #13.
+    - Added filtering for User Messages, closes #10.
+- Internal
+    - set source-demo-tool version to 0.7.1
 
 ### v0.5.1
 - Features

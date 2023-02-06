@@ -38,6 +38,7 @@ impl UserMessagesToolViewModel {
             });
         });
         vm_messages.set_tick_column(ticks, tick_interval);
+        vm_messages.set_filterable(true);
 
         Self { vm_messages }
     }

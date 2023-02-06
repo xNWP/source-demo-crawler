@@ -1715,9 +1715,9 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool"
-version = "0.6.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2166fb18bf8176380d90541d7e5acdb69183bfbe6749b1dcdf685fc777367b95"
+checksum = "113614ed1d58fad5bdbfb24c7f194908e43d6bcfebfa86ae1df42018818ea688"
 dependencies = [
  "async-channel",
  "buf_redux",
@@ -1736,9 +1736,9 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool-impl-proc-macros"
-version = "0.3.0"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0082e679c8f180fe06ac38868e172548f21382c16b53284540e548d35de9d28c"
+checksum = "d9ac17f00abc8f1adcbc59b5200b6e235b29046423e114b5a6e9768ef3ed465a"
 dependencies = [
  "proc-macro2",
  "quote",
