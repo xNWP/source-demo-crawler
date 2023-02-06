@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.5.2
 - Features
     - Game Events now link from frames to individual entries in the Game Events Tool and vice-versa, closes #13.
     - Added filtering for User Messages, closes #10.
