@@ -104,6 +104,12 @@ pub enum Focusable {
     GameEventsList,
 }
 
+#[derive(Debug)]
+pub enum Filters {
+    UserMessages,
+    GameEvents,
+}
+
 pub enum Event {
     BeginOpenFile,
     NewFile(PathBuf),
@@ -112,6 +118,7 @@ pub enum Event {
     SelectMessage(&'static str, usize),
     SetTool(&'static str),
     SelectGameEvent(usize),
+    ClearFilter(Filters),
 }
 
 impl Display for Event {
@@ -124,6 +131,7 @@ impl Display for Event {
             Event::SelectMessage(tool, index) => f.write_fmt(format_args!("SelectMessage({}, {})", tool, index)),
             Event::SetTool(tool_name) => f.write_fmt(format_args!("SetTool({})", tool_name)),
             Event::SelectGameEvent(index) => f.write_fmt(format_args!("SelectGameEvent({})", index)),
+            Event::ClearFilter(filt) => f.write_fmt(format_args!("ClearFilter({:?})", filt)),
         }
     }
 }

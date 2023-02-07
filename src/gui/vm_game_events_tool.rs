@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use super::{ Event, ViewModel, Focusable, vm_demo_file::tick_to_time_string, table_constants };
+use super::{ Event, ViewModel, Focusable, vm_demo_file::tick_to_time_string, table_constants, Filters };
 use eframe::{egui::{self, Sense, CursorIcon, RichText, Layout}, emath::Align};
 use source_demo_tool::demo_file::{FullGameEvent, FullGameEventKey, FullGameEventKeyType};
 use egui_extras::{ TableBuilder, Column };
@@ -28,7 +28,7 @@ pub struct GameEventsToolViewModel {
 
 impl GameEventsToolViewModel {
     pub fn new(game_events_vec: Vec<FullGameEvent>, tick_interval: f32) -> Self {
-        let mut filterable_data = BTreeMap::new(); 
+        let mut filterable_data = BTreeMap::new();
         let mut game_events = BTreeMap::new();
 
         game_events.insert("None".to_owned(), BTreeMap::new());
@@ -90,7 +90,7 @@ impl GameEventsToolViewModel {
             if ev.0 == index {
                 self.b_scroll_next = true;
                 self.active_index = Some(index);
-                
+
                 let active_event = &ev.1;
                 let keys = active_event.event_keys.clone();
                 self.vm_active_keys = Some(
@@ -370,6 +370,15 @@ impl ViewModel for GameEventsToolViewModel {
             Event::SelectGameEvent(index) => {
                 self.set_active_index(*index);
                 true
+            },
+            Event::ClearFilter(filter) => {
+                if let Filters::GameEvents = filter {
+                    self.active_filter_index = 0;
+                    self.display_events = self.game_events["None"].clone().into_iter().collect();
+                    true
+                } else {
+                    false
+                }
             },
             _ => false
         }

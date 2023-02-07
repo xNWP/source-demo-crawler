@@ -213,6 +213,11 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
     pub fn last_message(&mut self) -> bool {
         self.set_active_message(self.display_messages.last().unwrap().0)
     }
+
+    pub fn clear_filter(&mut self) {
+        self.active_filter_index = 0;
+        self.display_messages = self.messages["None"].clone().into_iter().collect();
+    }
 }
 
 impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for ProtobufMessageListViewModel<MessageType> {

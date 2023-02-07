@@ -6,7 +6,7 @@ use super::{
     Focusable,
     vm_packet_data::PacketDataViewModel,
     vm_demo_file::tick_to_time_string,
-    table_constants,
+    table_constants, Filters,
 };
 use source_demo_tool::demo_file::{
     frame::{ Command, Frame }, packet::netmessage::NetMessage,
@@ -123,6 +123,7 @@ impl FramesToolViewModel {
                                 if ui.button("Goto").clicked() {
                                     events.append(&mut vec![
                                         Event::SetTool("User Messages"),
+                                        Event::ClearFilter(Filters::UserMessages),
                                         Event::SelectMessage("user_messages", user_message_index)
                                     ]);
                                 }
@@ -137,6 +138,7 @@ impl FramesToolViewModel {
                                 if ui.button("Goto").clicked() {
                                     events.append(&mut vec![
                                         Event::SetTool("Game Events"),
+                                        Event::ClearFilter(Filters::GameEvents),
                                         Event::SelectGameEvent(game_event_index)
                                     ]);
                                 }

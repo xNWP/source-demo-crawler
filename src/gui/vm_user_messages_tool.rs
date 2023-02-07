@@ -1,3 +1,4 @@
+use super::Filters;
 use super::{ Event, ViewModel, vm_protobuf_message_list::ProtobufMessageListViewModel };
 
 use source_demo_tool::demo_file::packet::{
@@ -50,6 +51,15 @@ impl ViewModel for UserMessagesToolViewModel {
     }
 
     fn handle_event(&mut self, event: &Event) -> bool {
+        if let Event::ClearFilter(filter) = event {
+            if let Filters::UserMessages = filter {
+                self.vm_messages.clear_filter();
+                return true
+            } else {
+                return false
+            }
+        }
+
         self.vm_messages.handle_event(event)
     }
 

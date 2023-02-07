@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Bug Fixes
+    - Fixed filters not playing nice with "Goto" links, closes #26.
 - Changes
     - Moved gui initialization to its own thread (stops loading spinner from hitching), closes #24.
     - Made 'hide None values' sticky, closes #20.
