@@ -41,6 +41,10 @@ pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> 
     active_filter_index: usize,
     filterable_data: Vec<(&'static str, usize)>,
     filterable_list: Vec<String>,
+    message_name_callback: Option<Box<
+        dyn Fn(&MessageType) -> String
+        + Send
+    >>,
 }
 
 impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageListViewModel<MessageType> {
@@ -111,6 +115,7 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
             tick_interval: None,
             filterable: false,
             active_filter_index: 0,
+            message_name_callback: None,
         }
     }
 
@@ -125,8 +130,14 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
 
     pub fn set_message_header_callback<F>(&mut self, callback: F)
     where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
-        + Send + 'static {
+    + Send + 'static {
         self.message_header_callback = Some(Box::new(callback));
+    }
+
+    pub fn set_message_name_callback<F>(&mut self, callback: F)
+    where F: Fn(&MessageType) -> String
+    + Send + 'static {
+        self.message_name_callback = Some(Box::new(callback));
     }
 
     pub fn get_active_message(&self) -> &Option<usize> {
@@ -342,12 +353,16 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for Pro
                             self.display_messages.len(),
                             |index, mut row| {
 
-                            let message_return = &self.display_messages[index];
+                            let message_return_pair = &self.display_messages[index];
                             let name = {
-                                if message_return.1.message.is_some() {
-                                    message_return.1.message.as_ref().unwrap().to_str()
+                                if let Some(msg) = &message_return_pair.1.message {
+                                    if let Some(f) = &self.message_name_callback {
+                                        f(&msg)
+                                    } else {
+                                        msg.to_str().to_owned()
+                                    }
                                 } else {
-                                    "????".into()
+                                    "????".to_owned()
                                 }
                             };
 

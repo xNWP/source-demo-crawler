@@ -9,7 +9,7 @@ use super::{
     table_constants, Filters,
 };
 use source_demo_tool::demo_file::{
-    frame::{ Command, Frame }, packet::netmessage::NetMessage,
+    frame::{ Command, Frame }, packet::netmessage::{NetMessage, GameEventListData},
 };
 use eframe::egui::{ self, CursorIcon, RichText, Sense };
 use egui_extras::{ TableBuilder, Column };
@@ -23,6 +23,7 @@ pub struct FramesToolViewModel {
     last_message_index: Option<usize>,
     frame_data: Vec<FrameData>,
     last_hide_none_values: bool,
+    game_event_ld: GameEventListData,
 }
 
 #[derive(Clone)]
@@ -41,7 +42,7 @@ impl FrameData {
 }
 
 impl FramesToolViewModel {
-    pub fn new(demo_frames: Vec<Frame>, tick_interval: f32) -> Self {
+    pub fn new(demo_frames: Vec<Frame>, tick_interval: f32, game_event_ld: GameEventListData) -> Self {
         let mut frame_data = Vec::new();
         let mut user_message_it = 0;
         let mut game_event_it = 0;
@@ -78,6 +79,7 @@ impl FramesToolViewModel {
 
         Self {
             frame_data,
+            game_event_ld,
             vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval),
             vm_packet_data: None,
             last_message_index: None,
@@ -145,7 +147,8 @@ impl FramesToolViewModel {
                             });
                         }
                     }
-                }
+                },
+                self.game_event_ld.clone()
             );
 
             if let Some(index) = self.last_message_index {

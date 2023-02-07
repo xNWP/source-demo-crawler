@@ -2,6 +2,7 @@
 
 ### Latest/Nightly (this branch)
 - Features
+    - UserMessages and GameEvents now display their sub-message names in the Frames tool, closes #21.
     - Added Help/About page, closes #23.
 - Bug Fixes
     - Fixed filters not playing nice with "Goto" links, closes #26.
@@ -9,7 +10,7 @@
     - Moved gui initialization to its own thread (stops loading spinner from hitching), closes #24.
     - Made 'hide None values' sticky, closes #20.
 - Internal
-    - set source-demo-tool version to 0.7.2
+    - set source-demo-tool version to 0.7.3
 
 ### v0.5.2
 - Features
@@ -39,7 +40,7 @@
     - Added Server Info tool. close #3
 - Internal
     - set dependency RFD version to 0.11.0
-  
+
 ### v0.4.1
 - Features
     - Protobuf messages (frames/user messages tool) now show their message index.

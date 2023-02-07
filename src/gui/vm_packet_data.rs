@@ -3,7 +3,7 @@ use super::{
     ViewModel,
     w_copyable_field::CopyableFieldWidget, vm_protobuf_message_list::ProtobufMessageListViewModel,
 };
-use source_demo_tool::demo_file::packet::{PacketData, netmessage::NetMessage, self, MessageParseReturn};
+use source_demo_tool::{demo_file::packet::{PacketData, netmessage::{NetMessage, GameEventListData}, self, MessageParseReturn, usermessage::UserMessage}, protobuf_message::ProtobufMessageEnumTraits};
 use eframe::egui;
 
 pub struct PacketDataViewModel {
@@ -12,13 +12,47 @@ pub struct PacketDataViewModel {
 }
 
 impl PacketDataViewModel {
-    pub fn new<F>(packet_data: PacketData, header_callback: F) -> Self
+    pub fn new<F>(
+        packet_data: PacketData,
+        header_callback: F,
+        game_event_ld: GameEventListData,
+    ) -> Self
     where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>)
         + 'static + Send {
         let header = packet_data.header;
         let mut vm_message_list
             = ProtobufMessageListViewModel::new("packet_data_messages", packet_data.network_messages);
         vm_message_list.set_message_header_callback(header_callback);
+
+        let umsg_id_map = UserMessage::get_id_map();
+        vm_message_list.set_message_name_callback(move |nmsg| {
+            match nmsg {
+                NetMessage::UserMessage(umd) => {
+                    if let Some(id) = umd.msg_type {
+                        let id = id as usize;
+                        if umsg_id_map.contains_key(&id) {
+                            return format!("UserMessage({})", umsg_id_map[&id])
+                        }
+                    }
+                },
+                NetMessage::GameEvent(ged) => {
+                    if let Some(id) = ged.event_id {
+                        for k in &game_event_ld.Descriptors {
+                            if let Some(q) = k.event_id {
+                                if q == id {
+                                    if let Some(name) = &k.name {
+                                        return format!("GameEvent({})", name)
+                                    }
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+            return nmsg.to_str().to_owned()
+        });
 
         Self {
             header,

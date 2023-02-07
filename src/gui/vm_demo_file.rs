@@ -61,6 +61,7 @@ impl DemoFileViewModel {
             None => None
         };
         let game_events = demo_file.get_full_game_events();
+        let game_event_ld = demo_file.get_game_event_list().unwrap().clone();
 
         let tools: Vec<DemoFileTools> = vec![
             DemoFileTools {
@@ -80,7 +81,7 @@ impl DemoFileViewModel {
             },
             DemoFileTools {
                 name: "Frames",
-                vm: Box::new(FramesToolViewModel::new(frames, tick_interval)),
+                vm: Box::new(FramesToolViewModel::new(frames, tick_interval, game_event_ld)),
                 focus: Focusable::FramesListViewModel,
             },
             DemoFileTools {
