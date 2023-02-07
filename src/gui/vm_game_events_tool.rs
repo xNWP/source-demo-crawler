@@ -351,7 +351,7 @@ impl ViewModel for GameEventsToolViewModel {
                         if ui.button("Goto").clicked() {
                             events.append(&mut vec![
                                 Event::SetTool("Frames"),
-                                Event::SelectFrame(event.frame_index),
+                                Event::SelectFrame("Frames", event.frame_index),
                                 Event::SelectMessage("packet_data_messages", event.message_index)
                             ]);
                         }

@@ -24,6 +24,7 @@ pub struct FramesToolViewModel {
     frame_data: Vec<FrameData>,
     last_hide_none_values: bool,
     game_event_ld: GameEventListData,
+    name: &'static str,
 }
 
 #[derive(Clone)]
@@ -42,7 +43,12 @@ impl FrameData {
 }
 
 impl FramesToolViewModel {
-    pub fn new(demo_frames: Vec<Frame>, tick_interval: f32, game_event_ld: GameEventListData) -> Self {
+    pub fn new(
+        name: &'static str,
+        demo_frames: Vec<Frame>,
+        tick_interval: f32,
+        game_event_ld: GameEventListData
+    ) -> Self {
         let mut frame_data = Vec::new();
         let mut user_message_it = 0;
         let mut game_event_it = 0;
@@ -78,9 +84,10 @@ impl FramesToolViewModel {
         }
 
         Self {
+            name,
             frame_data,
             game_event_ld,
-            vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval),
+            vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval, name),
             vm_packet_data: None,
             last_message_index: None,
             last_hide_none_values: false,
@@ -242,8 +249,10 @@ impl ViewModel for FramesToolViewModel {
     }
 
     fn handle_event(&mut self, event: &super::Event) -> bool {
-        if let Event::SelectFrame(index) = event {
-            return self.select_frame(*index)
+        if let Event::SelectFrame(tool_name, index) = event {
+            if self.name == *tool_name {
+                return self.select_frame(*index)
+            }
         }
 
         if self.vm_frames_list.handle_event(event) {
@@ -266,12 +275,19 @@ pub struct FramesListViewModel {
     demo_frames: Vec<Frame>,
     active_frame: Option<usize>,
     b_scroll_next: bool,
+    frame_tool_name: &'static str,
 }
 
 impl FramesListViewModel {
-    pub fn new(demo_frames: Vec<Frame>, tick_interval: f32) -> Self {
+    pub fn new(
+        demo_frames: Vec<Frame>,
+        tick_interval: f32,
+        frame_tool_name: &'static str
+    ) -> Self {
         Self {
-            tick_interval, demo_frames,
+            tick_interval,
+            demo_frames,
+            frame_tool_name,
             active_frame: None,
             b_scroll_next: true,
         }
@@ -380,8 +396,10 @@ impl ViewModel for FramesListViewModel {
                     }
 
                     if is_any_clicked {
-                        events.push(Event::SelectFrame(index));
-                        events.push(Event::SetFocus(Focusable::FramesListViewModel));
+                        events.append(&mut vec![
+                            Event::SelectFrame(self.frame_tool_name, index),
+                            Event::SetFocus(Focusable::FramesListViewModel)
+                        ]);
                     }
                 });
         });

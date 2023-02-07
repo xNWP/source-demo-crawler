@@ -33,7 +33,7 @@ impl UserMessagesToolViewModel {
                 ui.label(format!("Frame: {}, Message: {}", frame_index + 1, msg_index + 1));
                 if ui.button("Goto").clicked() {
                     events.push(Event::SetTool("Frames"));
-                    events.push(Event::SelectFrame(frame_index));
+                    events.push(Event::SelectFrame("Frames", frame_index));
                     events.push(Event::SelectMessage("packet_data_messages", msg_index));
                 }
             });

@@ -55,6 +55,7 @@ impl DemoFileViewModel {
             None => 0.0
         };
         let frames = demo_file.frames.clone();
+        let sign_on_frames = demo_file.sign_on_frames.clone();
         let user_messages = demo_file.get_user_messages();
         let server_info = match demo_file.get_server_info() {
             Some(si) => Some(si.clone()),
@@ -81,7 +82,12 @@ impl DemoFileViewModel {
             },
             DemoFileTools {
                 name: "Frames",
-                vm: Box::new(FramesToolViewModel::new(frames, tick_interval, game_event_ld)),
+                vm: Box::new(FramesToolViewModel::new("Frames", frames, tick_interval, game_event_ld.clone())),
+                focus: Focusable::FramesListViewModel,
+            },
+            DemoFileTools {
+                name: "Sign On Frames",
+                vm: Box::new(FramesToolViewModel::new("SignOnFrames", sign_on_frames, tick_interval, game_event_ld)),
                 focus: Focusable::FramesListViewModel,
             },
             DemoFileTools {
