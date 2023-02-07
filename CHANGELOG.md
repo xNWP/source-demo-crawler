@@ -3,6 +3,7 @@
 ### Latest/Nightly (this branch)
 - Changes
     - Moved gui initialization to its own thread (stops loading spinner from hitching), closes #24.
+    - Made 'hide None values' sticky, closes #20.
 - Internal
     - set source-demo-tool version to 0.7.2
 

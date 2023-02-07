@@ -11,7 +11,7 @@ const FIELD_NAME_WIDTH: f32 = 200.0;
 pub struct ProtobufMessageViewModel {
     pub message: Box<dyn ProtobufMessageEnumTraits>,
     pub field_data: Vec<(String, ProtobufValue)>,
-    pub hide_none_values: bool,
+    hide_none_values: bool,
 }
 
 impl ProtobufMessageViewModel {
@@ -24,6 +24,15 @@ impl ProtobufMessageViewModel {
         rval.update_field_data();
 
         rval
+    }
+
+    pub fn hide_none_values_set(&mut self, value: bool) {
+        self.hide_none_values = value;
+        self.update_field_data();
+    }
+
+    pub fn hide_none_values_get(&self) -> bool {
+        self.hide_none_values
     }
 
     fn update_field_data(&mut self) {

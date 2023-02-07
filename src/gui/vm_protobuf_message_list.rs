@@ -140,8 +140,20 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
                 self.active_message = Some(index);
                 let active_message = &msg.1.message;
                 if let Some(msg) = active_message {
+                    // carry over prior "hide None values"
+                    let hide_none_values = {
+                        if let Some(pbm_vm) = &self.vm_protobuf_message {
+                            pbm_vm.hide_none_values_get()
+                        } else {
+                            false
+                        }
+                    };
+
+                    let mut pbm_vm = ProtobufMessageViewModel::new(Box::new(msg.clone()));
+                    pbm_vm.hide_none_values_set(hide_none_values);
+
                     self.vm_protobuf_message = Some(
-                        ProtobufMessageViewModel::new(Box::new(msg.clone()))
+                        pbm_vm
                     );
                 }
                 return true

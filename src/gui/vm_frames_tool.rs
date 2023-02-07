@@ -22,6 +22,7 @@ pub struct FramesToolViewModel {
     pub vm_packet_data: Option<PacketDataViewModel>,
     last_message_index: Option<usize>,
     frame_data: Vec<FrameData>,
+    last_hide_none_values: bool,
 }
 
 #[derive(Clone)]
@@ -76,10 +77,11 @@ impl FramesToolViewModel {
         }
 
         Self {
+            frame_data,
             vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval),
             vm_packet_data: None,
             last_message_index: None,
-            frame_data,
+            last_hide_none_values: false,
         }
     }
 
@@ -100,6 +102,13 @@ impl FramesToolViewModel {
         let active_message = &self.vm_frames_list.demo_frames[index];
         if let Command::Packet(pd) = &active_message.command {
             let frame_data = self.frame_data[index].clone();
+
+            // carry over "hide None values"
+            if let Some(pd) = &self.vm_packet_data {
+                if let Some(pbm_vm) = &pd.vm_message_list.vm_protobuf_message {
+                    self.last_hide_none_values = pbm_vm.hide_none_values_get();
+                }
+            }
 
             let mut packet_data = PacketDataViewModel::new(
                 pd.clone(),
@@ -140,6 +149,12 @@ impl FramesToolViewModel {
             if let Some(index) = self.last_message_index {
                 if index < packet_data.vm_message_list.messages.len() {
                     packet_data.vm_message_list.set_active_message(index);
+                    let pbm_vm
+                        = packet_data.vm_message_list
+                        .vm_protobuf_message.as_mut();
+                    if let Some(vm) = pbm_vm {
+                        vm.hide_none_values_set(self.last_hide_none_values);
+                    }
                 }
             }
 
