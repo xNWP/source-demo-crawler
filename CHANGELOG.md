@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Added Help/About page, closes #23.
 - Bug Fixes
     - Fixed filters not playing nice with "Goto" links, closes #26.
 - Changes
