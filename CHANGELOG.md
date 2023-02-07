@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.6.0
 - Features
     - UserMessages and GameEvents now display their sub-message names in the Frames tool, closes #21.
     - Added Help/About page, closes #23.
