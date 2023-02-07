@@ -13,7 +13,8 @@ pub struct PacketDataViewModel {
 
 impl PacketDataViewModel {
     pub fn new<F>(packet_data: PacketData, header_callback: F) -> Self
-    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>) + 'static {
+    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>)
+        + 'static + Send {
         let header = packet_data.header;
         let mut vm_message_list
             = ProtobufMessageListViewModel::new("packet_data_messages", packet_data.network_messages);

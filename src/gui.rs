@@ -128,7 +128,7 @@ impl Display for Event {
     }
 }
 
-pub trait ViewModel {
+pub trait ViewModel: Send {
     fn draw(&mut self, ui: &mut egui::Ui, events: &mut Vec<Event>);
     fn handle_event(&mut self, _event: &Event) -> bool { false }
     fn as_any(&self) -> &dyn Any;

@@ -14,6 +14,7 @@ const INITIAL_UI_SCALE: f32 = 1.15;
 pub struct MainViewModel {
     inner_view_model: Box<dyn ViewModel>,
     opening_file_join_handle: Option<JoinHandle<Result<DemoFile, String>>>,
+    initializing_gui_join_handle: Option<JoinHandle<DemoFileViewModel>>,
     focused_vm: Focusable,
     ui_ppt: f32,
 }
@@ -23,6 +24,7 @@ impl MainViewModel {
         MainViewModel {
             inner_view_model: Box::new(NoFilesOpenViewModel{}),
             opening_file_join_handle: None,
+            initializing_gui_join_handle: None,
             focused_vm: Focusable::None,
             ui_ppt: INITIAL_UI_SCALE,
         }
@@ -265,7 +267,9 @@ impl ViewModel for MainViewModel {
                 match jh.join().unwrap() {
                     Ok(df) => {
                         events.push(Event::NewFile(df.path.clone()));
-                        self.inner_view_model = Box::new(DemoFileViewModel::new(df));
+                        self.initializing_gui_join_handle = Some(thread::spawn(move || {
+                            DemoFileViewModel::new(df)
+                        }));
                     },
                     Err(e) => {
                         rfd::MessageDialog::default()
@@ -278,6 +282,17 @@ impl ViewModel for MainViewModel {
                 }
             } else {
                 self.opening_file_join_handle = Some(jh);
+            }
+        }
+
+        // handle initializing gui
+        if let Some(jh) = self.initializing_gui_join_handle.take() {
+            if jh.is_finished() {
+                if let Ok(df_vm) = jh.join() {
+                    self.inner_view_model = Box::new(df_vm);
+                }
+            } else {
+                self.initializing_gui_join_handle = Some(jh);
             }
         }
 

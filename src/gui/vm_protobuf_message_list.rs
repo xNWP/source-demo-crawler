@@ -33,6 +33,7 @@ pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> 
     b_scroll_next: bool,
     message_header_callback: Option<Box<
         dyn Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
+        + Send
     >>,
     message_ticks: Option<Vec<i32>>,
     tick_interval: Option<f32>,
@@ -123,7 +124,8 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
     }
 
     pub fn set_message_header_callback<F>(&mut self, callback: F)
-    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>) + 'static {
+    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
+        + Send + 'static {
         self.message_header_callback = Some(Box::new(callback));
     }
 
@@ -331,7 +333,7 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for Pro
                                     "????".into()
                                 }
                             };
-                            
+
                             let real_index = self.display_messages[index].0;
                             let is_active = {
                                 if let Some(active_index) = self.active_message {
