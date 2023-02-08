@@ -1,6 +1,6 @@
 [package]
 name = "source-demo-tool-crawler"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 authors = ["Brett 'xNWP' Anthony <nwpbusiness@gmail.com>"]
 description = "WIP: a gui tool for opening (editing planned) source engine demo files."

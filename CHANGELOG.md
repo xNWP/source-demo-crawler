@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.7.0
 - Features
     - Added Sign On Frames tool.
     - Added DataTables viewmodel.
