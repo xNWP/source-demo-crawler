@@ -1,9 +1,31 @@
-use eframe::{egui::{RichText, Layout}, emath::Align};
+use std::{fs::File, io::Read};
+
+use eframe::{egui::{self, RichText, Layout}, emath::Align, epaint::Vec2};
 
 use super::{ Event, ViewModel };
 
-pub struct AboutHelpViewModel {
+const CHANGELOG_WIDTH: f32 = 640.0;
+const SEPARATOR_WIDTH: f32 = 260.0;
 
+pub struct AboutHelpViewModel {
+    changelog_text: String,
+}
+
+impl AboutHelpViewModel {
+    pub fn new() -> Self {
+        let changelog_file = File::open("CHANGELOG.md");
+
+        let mut changelog_text = "".to_owned();
+        match changelog_file {
+            Ok(mut file) => match file.read_to_string(&mut changelog_text) {
+                Ok(_) => {},
+                Err(e) => eprintln!("Error occured reading changelog: {}", e)
+            },
+            Err(e) => eprintln!("Error occured opening changelog: {}", e)
+        }
+
+        Self { changelog_text }
+    }
 }
 
 impl ViewModel for AboutHelpViewModel {
@@ -52,7 +74,7 @@ impl ViewModel for AboutHelpViewModel {
             }
 
             ui.scope(|ui| {
-                ui.set_width(260.0);
+                ui.set_width(SEPARATOR_WIDTH);
                 ui.add_space(5.0);
                 ui.separator();
                 ui.add_space(5.0);
@@ -61,6 +83,45 @@ impl ViewModel for AboutHelpViewModel {
             ui.label("⬆/⬇ to move between items in lists.");
             ui.label("Ctrl + ⬆/⬇ to move to the beginning/end of a list.");
             ui.label("Shift + ⬆/⬇ to move 10 items at a time through a list.");
+
+            // changelog
+            ui.scope(|ui| {
+                ui.set_width(SEPARATOR_WIDTH);
+                ui.add_space(5.0);
+                ui.separator();
+                ui.add_space(5.0);
+            });
+        });
+
+        let avail_space = ui.available_size();
+        ui.horizontal(|ui| {
+            ui.set_width(avail_space.x);
+            ui.spacing_mut().item_spacing = Vec2::new(0.0, 0.0);
+            ui.add_space((avail_space.x - CHANGELOG_WIDTH) / 2.0);
+
+            ui.group(|ui| {
+                ui.vertical(|ui| {
+                    ui.set_width(CHANGELOG_WIDTH);
+                    ui.set_height(avail_space.y - 20.0);
+                    egui::ScrollArea::vertical()
+                    .max_width(CHANGELOG_WIDTH)
+                    .show(ui, |ui| {
+                        ui.set_width(CHANGELOG_WIDTH);
+                        for line_in in self.changelog_text.lines() {
+                            let mut line = line_in.trim();
+                            if line.starts_with("###") {
+                                line = &line[3..].trim_start();
+                                ui.label(RichText::new(line).size(24.0));
+                            } else if line.starts_with("#") {
+                                line = &line[1..].trim_start();
+                                ui.label(RichText::new(line).size(48.0));
+                            } else {
+                                ui.label(line_in);
+                            }
+                        }
+                    });
+                });
+            });
         });
     }
 

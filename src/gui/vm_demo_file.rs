@@ -67,7 +67,7 @@ impl DemoFileViewModel {
         let tools: Vec<DemoFileTools> = vec![
             DemoFileTools {
                 name: "?",
-                vm: Box::new(AboutHelpViewModel{}),
+                vm: Box::new(AboutHelpViewModel::new()),
                 focus: Focusable::None,
             },
             DemoFileTools {

@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Added changelog to About/Help page.
 
 ### v0.7.0
 - Features
