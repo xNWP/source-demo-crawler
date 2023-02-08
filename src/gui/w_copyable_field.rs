@@ -1,4 +1,4 @@
-use eframe::egui::{ self, Widget };
+use eframe::egui::{ self, Widget, CursorIcon, Sense };
 
 pub struct CopyableFieldWidget {
     pub label: String,
@@ -7,19 +7,17 @@ pub struct CopyableFieldWidget {
 
 impl Widget for CopyableFieldWidget {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let res = ui.horizontal(|ui| {
+        ui.horizontal(|ui| {
             ui.label(self.label);
-            ui.code(self.value.to_string());
-        }).response;
-
-        if res.clicked() {
-            // TODO: FIXME: doesn't work :')
-            //ui.output().copied_text = "capitalism, more like help".into();
-        }
-        
-        let res2 = res.clone();
-        //res.on_hover_cursor(CursorIcon::PointingHand).on_hover_text_at_pointer("Copy");
-
-        res2
+            if ui.code(self.value.to_string())
+                .interact(Sense::click())
+                .on_hover_cursor(CursorIcon::PointingHand)
+                .on_hover_text_at_pointer("Copy")
+                .clicked() {
+                    ui.output_mut(|o| {
+                        o.copied_text = self.value.to_string();
+                    });
+                }
+        }).response
     }
 }
