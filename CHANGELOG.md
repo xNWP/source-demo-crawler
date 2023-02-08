@@ -3,6 +3,8 @@
 ### Latest/Nightly (this branch)
 - Features
     - Added changelog to About/Help page.
+- Changes
+    - Flags, Hi-Value, and Lo-Value for SendTable fields now display in hex.
 - Internal
     - Set egui to version 0.21.0
     - Set egui_extras to version 0.21.0

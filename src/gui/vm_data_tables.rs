@@ -9,14 +9,14 @@ const CLASS_DESC_TABLE_NAME_WIDTH: f32 = 280.0;
 const SEND_TABLE_IS_END_WIDTH: f32 = 50.0;
 const SEND_TABLE_NEEDS_DECODER_WIDTH: f32 = 100.0;
 
-const SEND_PROP_NAME_WIDTH: f32 = 180.0;
-const SEND_PROP_TYPE_WIDTH: f32 = 50.0;
-const SEND_PROP_DT_NAME_WIDTH: f32 = 180.0;
-const SEND_PROP_FLAGS_WIDTH: f32 = 80.0;
-const SEND_PROP_HVAL_WIDTH: f32 = 80.0;
-const SEND_PROP_LVAL_WIDTH: f32 = 80.0;
-const SEND_PROP_NBITS_WIDTH: f32 = 50.0;
-const SEND_PROP_NELEMS_WIDTH: f32 = 50.0;
+const SEND_PROP_NAME_WIDTH: f32 = 196.0;
+const SEND_PROP_TYPE_WIDTH: f32 = 28.0;
+const SEND_PROP_DT_NAME_WIDTH: f32 = 196.0;
+const SEND_PROP_FLAGS_WIDTH: f32 = 130.0;
+const SEND_PROP_HVAL_WIDTH: f32 = 70.0;
+const SEND_PROP_LVAL_WIDTH: f32 = 70.0;
+const SEND_PROP_NBITS_WIDTH: f32 = 34.0;
+const SEND_PROP_NELEMS_WIDTH: f32 = 34.0;
 
 pub struct DataTablesViewModel {
     data_tables: DataTablesData,
@@ -343,19 +343,19 @@ impl ViewModel for DataTablesViewModel {
                                             });
                                             row.col(|ui| {
                                                 ui.label(match &field.flags {
-                                                    Some(x) => format!("{}", x),
+                                                    Some(x) => format!("0x{:0>16x}", x),
                                                     None => "None".to_owned()
                                                 });
                                             });
                                             row.col(|ui| {
                                                 ui.label(match &field.high_value {
-                                                    Some(x) => format!("{}", x),
+                                                    Some(x) => format!("0x{:0>8x}", x),
                                                     None => "None".to_owned()
                                                 });
                                             });
                                             row.col(|ui| {
                                                 ui.label(match &field.low_value {
-                                                    Some(x) => format!("{}", x),
+                                                    Some(x) => format!("0x{:0>8x}", x),
                                                     None => "None".to_owned()
                                                 });
                                             });
