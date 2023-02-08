@@ -8,6 +8,7 @@
 - Internal
     - Set egui to version 0.21.0
     - Set egui_extras to version 0.21.0
+    - Set source-demo-tool to version 0.8.0
 
 ### v0.7.0
 - Features
