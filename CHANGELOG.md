@@ -3,6 +3,7 @@
 ### Latest/Nightly (this branch)
 - Features
     - Added Sign On Frames tool.
+    - Added DataTables viewmodel.
 
 ### v0.6.0
 - Features

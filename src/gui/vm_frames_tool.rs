@@ -6,7 +6,7 @@ use super::{
     Focusable,
     vm_packet_data::PacketDataViewModel,
     vm_demo_file::tick_to_time_string,
-    table_constants, Filters,
+    table_constants, Filters, vm_data_tables::DataTablesViewModel,
 };
 use source_demo_tool::demo_file::{
     frame::{ Command, Frame }, packet::netmessage::{NetMessage, GameEventListData},
@@ -20,6 +20,7 @@ const MAX_FRAMES_LIST_WIDTH: f32 = 500.0;
 pub struct FramesToolViewModel {
     pub vm_frames_list: FramesListViewModel,
     pub vm_packet_data: Option<PacketDataViewModel>,
+    pub vm_data_tables: Option<DataTablesViewModel>,
     last_message_index: Option<usize>,
     frame_data: Vec<FrameData>,
     last_hide_none_values: bool,
@@ -89,6 +90,7 @@ impl FramesToolViewModel {
             game_event_ld,
             vm_frames_list: FramesListViewModel::new(demo_frames, tick_interval, name),
             vm_packet_data: None,
+            vm_data_tables: None,
             last_message_index: None,
             last_hide_none_values: false,
         }
@@ -100,22 +102,20 @@ impl FramesToolViewModel {
             return false
         }
 
-        if let Some(pd_vm) = &self.vm_packet_data {
-            let last_msg = *pd_vm.vm_message_list.get_active_message();
-            if let Some(last_index) = last_msg {
-                self.last_message_index = Some(last_index);
-            }
-        }
-
         self.vm_frames_list.set_active_frame(index);
         let active_message = &self.vm_frames_list.demo_frames[index];
+
         if let Command::Packet(pd) = &active_message.command {
             let frame_data = self.frame_data[index].clone();
 
-            // carry over "hide None values"
-            if let Some(pd) = &self.vm_packet_data {
-                if let Some(pbm_vm) = &pd.vm_message_list.vm_protobuf_message {
+            // carry over "hide None values" + last message index
+            if let Some(pd_vm) = &self.vm_packet_data {
+                if let Some(pbm_vm) = &pd_vm.vm_message_list.vm_protobuf_message {
                     self.last_hide_none_values = pbm_vm.hide_none_values_get();
+                }
+                let last_msg = *pd_vm.vm_message_list.get_active_message();
+                if let Some(last_index) = last_msg {
+                    self.last_message_index = Some(last_index);
                 }
             }
 
@@ -175,6 +175,12 @@ impl FramesToolViewModel {
             self.vm_packet_data = None;
         }
 
+        if let Command::DataTables(dtd) = &active_message.command {
+            self.vm_data_tables = Some(DataTablesViewModel::new(dtd.clone()));
+        } else {
+            self.vm_data_tables = None;
+        }
+
         return true
     }
 
@@ -214,6 +220,11 @@ impl ViewModel for FramesToolViewModel {
             total_panels += 1;
         }
 
+        let active_is_data_tables = self.vm_data_tables.is_some();
+        if active_is_data_tables {
+            total_panels += 1;
+        }
+
         let frames_list_width = {
             if total_panels == 1 {
                 avail_space.x
@@ -243,6 +254,15 @@ impl ViewModel for FramesToolViewModel {
                     ui.set_width(packet_data_width);
                     ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
                     self.vm_packet_data.as_mut().unwrap().draw(ui, events);
+                });
+            }
+
+            // data tables
+            if active_is_data_tables {
+                ui.vertical(|ui| {
+                    ui.set_width(packet_data_width);
+                    ui.set_height(avail_space.y - table_constants::BOTTOM_MARGIN);
+                    self.vm_data_tables.as_mut().unwrap().draw(ui, events);
                 });
             }
         });

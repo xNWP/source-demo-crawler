@@ -220,8 +220,53 @@ impl MainViewModel {
                     } else {
                         eprintln!("Focus was GameEventsList but no DemoFileViewModel present.");
                     }
+                },
+                Focusable::SendTables => {
+                    let df_vm_res = self.inner_view_model
+                        .as_any_mut()
+                        .downcast_mut::<DemoFileViewModel>();
 
-                }
+                    if let Some(df_vm) = df_vm_res {
+                        let frames_vm_res = df_vm.get_active_tool()
+                            .as_any_mut()
+                            .downcast_mut::<FramesToolViewModel>();
+
+                        if let Some(frames_vm) = frames_vm_res {
+                            if let Some(dt_vm) = &mut frames_vm.vm_data_tables {
+                                if dt_vm.active_mode == "Send Tables" {
+                                    if b_pressed_arrow_dn {
+                                        if b_ctrl {
+                                            dt_vm.send_table_last();
+                                        } else if b_shift {
+                                            for _ in 0..SHIFT_JUMP_RANGE {
+                                                dt_vm.send_table_next();
+                                            }
+                                        } else {
+                                            dt_vm.send_table_next();
+                                        }
+                                    }
+                                    if b_pressed_arrow_up {
+                                        if b_ctrl {
+                                            dt_vm.send_table_first();
+                                        } else if b_shift {
+                                            for _ in 0..SHIFT_JUMP_RANGE {
+                                                dt_vm.send_table_prev();
+                                            }
+                                        } else {
+                                            dt_vm.send_table_prev();
+                                        }
+                                    }
+                                }
+                            } else {
+                                eprintln!("Focus was SendTables but no DataTablesViewModel present");
+                            }
+                        } else {
+                            eprintln!("Focus was SendTables but no FramesToolViewModel present");
+                        }
+                    } else {
+                        eprintln!("Focus was SendTables but no DemoFileViewModel present.");
+                    }
+                },
                 Focusable::None => {}, // do nothing
             }
         }

@@ -18,6 +18,7 @@ mod vm_protobuf_message_list;
 mod vm_server_info_tool;
 mod vm_game_events_tool;
 mod vm_abouthelp;
+mod vm_data_tables;
 // widgets: small tools for displaying common gui components.
 mod w_copyable_field;
 
@@ -103,6 +104,7 @@ pub enum Focusable {
     FramesListViewModel,
     ProtobufMessageListViewModel(&'static str),
     GameEventsList,
+    SendTables,
 }
 
 #[derive(Debug)]
