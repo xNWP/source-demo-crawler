@@ -3,6 +3,9 @@
 ### Latest/Nightly (this branch)
 - Features
     - Added changelog to About/Help page.
+- Internal
+    - Set egui to version 0.21.0
+    - Set egui_extras to version 0.21.0
 
 ### v0.7.0
 - Features

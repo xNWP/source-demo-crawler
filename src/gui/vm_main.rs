@@ -55,11 +55,11 @@ impl MainViewModel {
         }
 
     fn handle_keyboard_events(&mut self, ctx: &Context, events: &mut Vec<Event>) {
-        let b_shift = ctx.input().modifiers.shift_only();
-        let b_ctrl = ctx.input().modifiers.command_only();
+        let b_shift = ctx.input(|i| i.modifiers.shift_only());
+        let b_ctrl = ctx.input(|i| i.modifiers.command_only());
         // handle key up / down for lists
-        let b_pressed_arrow_up = ctx.input().key_pressed(Key::ArrowUp);
-        let b_pressed_arrow_dn = ctx.input().key_pressed(Key::ArrowDown);
+        let b_pressed_arrow_up = ctx.input(|i| i.key_pressed(Key::ArrowUp));
+        let b_pressed_arrow_dn = ctx.input(|i| i.key_pressed(Key::ArrowDown));
         if b_pressed_arrow_dn || b_pressed_arrow_up {
             match &self.focused_vm {
                 Focusable::FramesListViewModel => {
@@ -272,8 +272,8 @@ impl MainViewModel {
         }
 
         // handle key left / right for switching tools
-        let b_pressed_arrow_left = ctx.input().key_pressed(Key::ArrowLeft);
-        let b_pressed_arrow_right = ctx.input().key_pressed(Key::ArrowRight);
+        let b_pressed_arrow_left = ctx.input(|i| i.key_pressed(Key::ArrowLeft));
+        let b_pressed_arrow_right = ctx.input(|i| i.key_pressed(Key::ArrowRight));
         if b_pressed_arrow_left || b_pressed_arrow_right {
             let df_vm_res = self.inner_view_model
                 .as_any_mut()
@@ -298,7 +298,7 @@ impl MainViewModel {
         }
 
         // Ctrl+O: Open file anywhere in program
-        if ctx.input_mut().consume_key(Modifiers::CTRL, Key::O) {
+        if ctx.input_mut(|i| i.consume_key(Modifiers::CTRL, Key::O)) {
             events.push(Event::BeginOpenFile);
         }
     }

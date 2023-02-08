@@ -53,10 +53,10 @@ impl ViewModel for AboutHelpViewModel {
             ui.add_space(5.0);
 
             if ui.link("Source Demo Crawler (GitHub)").clicked() {
-                ui.output().open_url("https://github.com/xNWP/source-demo-crawler");
+                ui.output_mut(|o| o.open_url("https://github.com/xNWP/source-demo-crawler"));
             }
             if ui.link("Source Demo Crawler (crates.io)").clicked() {
-                ui.output().open_url("https://crates.io/crates/source-demo-tool-crawler");
+                ui.output_mut(|o| o.open_url("https://crates.io/crates/source-demo-tool-crawler"));
             }
 
             ui.add_space(5.0);
@@ -67,10 +67,10 @@ impl ViewModel for AboutHelpViewModel {
             ui.add_space(2.5);
 
             if ui.link("Twitter/@ThatNWP").clicked() {
-                ui.output().open_url("https://twitter.com/ThatNWP");
+                ui.output_mut(|o| o.open_url("https://twitter.com/ThatNWP"));
             }
             if ui.link("GitHub/@xNWP").clicked() {
-                ui.output().open_url("https://github.com/xNWP");
+                ui.output_mut(|o| o.open_url("https://github.com/xNWP"));
             }
 
             ui.scope(|ui| {

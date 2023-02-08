@@ -6,5 +6,17 @@ fn main() {
         initial_window_pos: Some([20.0, 20.0].into()),
         ..Default::default()
     };
-    eframe::run_native("Source Demo Crawler", native_options, Box::new(|cc| Box::new(gui::NewCrawlerApp::new(cc))));
+
+    match eframe::run_native(
+        "Source Demo Crawler",
+        native_options,
+        Box::new(|cc| {
+            Box::new(
+                gui::NewCrawlerApp::new(cc)
+            )
+        })
+    ) {
+        Ok(()) => {},
+        Err(e) => eprintln!("A critical error occured starting the egui app: {}", e)
+    }
 }
