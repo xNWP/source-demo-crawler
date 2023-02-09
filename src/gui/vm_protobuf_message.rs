@@ -1,5 +1,8 @@
+use std::{fs::File, io::Write};
+
 use super::{ViewModel, wfn_text_edit_singleline::wfn_text_edit_singleline};
 
+use rfd::MessageLevel;
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
 
 use egui_extras::{ TableBuilder, Column };
@@ -121,7 +124,40 @@ impl ViewModel for ProtobufMessageViewModel {
                         };
 
                         match &field.1 {
-                            ProtobufValue::Length(_) => { ui.label(val_str); },
+                            ProtobufValue::Length(d) => {
+                                ui.horizontal(|ui| {
+                                    ui.label(val_str);
+                                    if ui.button("💾").clicked() {
+                                        match rfd::FileDialog::new()
+                                        .add_filter("Binary Data", &["bin"])
+                                        .set_title("Save Binary Data")
+                                        .save_file() {
+                                            Some(path_buf) => {
+                                                let file_res = File::create(path_buf);
+                                                match file_res {
+                                                    Ok(mut file) => {
+                                                        if file.write_all(d).is_err() {
+                                                            rfd::MessageDialog::new()
+                                                            .set_title("File Error")
+                                                            .set_description("A critical write error occured while trying to save the file, please report this.")
+                                                            .set_level(MessageLevel::Error)
+                                                            .show();
+                                                        }
+                                                    },
+                                                    Err(e) => {
+                                                        rfd::MessageDialog::new()
+                                                        .set_title("File Error")
+                                                        .set_description(format!("A critical error occured while trying to write to the file, please report this: {}", e).as_str())
+                                                        .set_level(MessageLevel::Error)
+                                                        .show();
+                                                    }
+                                                }
+                                            },
+                                            None => {}
+                                        }
+                                    }
+                                });
+                            },
                             _ => { wfn_text_edit_singleline(ui, &mut val_str, None, true); }
                         }
                     });

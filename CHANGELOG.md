@@ -5,6 +5,7 @@
     - Added changelog to About/Help page.
     - Header Tool and Server Info Tool fields can now be copied by clicking them, closes #17.
     - Most table fields can now be selected & copied, closes #18.
+    - Length data messages (raw binary) can now be saved for detailed analysis.
 - Changes
     - Flags, Hi-Value, and Lo-Value for SendTable fields now display in hex.
 - Internal
