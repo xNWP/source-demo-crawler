@@ -1,4 +1,4 @@
-use super::ViewModel;
+use super::{ViewModel, wfn_text_edit_singleline::wfn_text_edit_singleline};
 
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
 
@@ -109,7 +109,7 @@ impl ViewModel for ProtobufMessageViewModel {
                         ui.label(&field.0);
                     });
                     row.col(|ui| {
-                        let val_str: String = match &field.1 {
+                        let mut val_str: String = match &field.1 {
                             ProtobufValue::None => "None".to_string(),
                             ProtobufValue::VarInt(v) => v.to_string(),
                             ProtobufValue::Length(v) => format!("Data ({} Bytes)", v.len()),
@@ -120,7 +120,10 @@ impl ViewModel for ProtobufMessageViewModel {
                             ProtobufValue::Repeated(_v) => panic!("Repeated should be flattened out"),
                         };
 
-                        ui.label(val_str);
+                        match &field.1 {
+                            ProtobufValue::Length(_) => { ui.label(val_str); },
+                            _ => { wfn_text_edit_singleline(ui, &mut val_str, None, true); }
+                        }
                     });
                 });
             });

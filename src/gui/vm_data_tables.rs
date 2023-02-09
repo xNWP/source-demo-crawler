@@ -1,6 +1,6 @@
 use source_demo_tool::demo_file::frame::DataTablesData;
 
-use super::{ Event, ViewModel, table_constants::{HEADER_HEIGHT, ROW_HEIGHT, SELECTED_ITEM_COLOUR}, Focusable };
+use super::{ Event, ViewModel, table_constants::{HEADER_HEIGHT, ROW_HEIGHT, SELECTED_ITEM_COLOUR}, Focusable, wfn_text_edit_singleline::wfn_text_edit_singleline };
 use egui_extras::{ TableBuilder, Column };
 use eframe::{egui::{self, Sense, RichText, CursorIcon, Layout}, emath::Align};
 
@@ -9,14 +9,14 @@ const CLASS_DESC_TABLE_NAME_WIDTH: f32 = 280.0;
 const SEND_TABLE_IS_END_WIDTH: f32 = 50.0;
 const SEND_TABLE_NEEDS_DECODER_WIDTH: f32 = 100.0;
 
-const SEND_PROP_NAME_WIDTH: f32 = 196.0;
-const SEND_PROP_TYPE_WIDTH: f32 = 28.0;
-const SEND_PROP_DT_NAME_WIDTH: f32 = 196.0;
-const SEND_PROP_FLAGS_WIDTH: f32 = 130.0;
-const SEND_PROP_HVAL_WIDTH: f32 = 70.0;
-const SEND_PROP_LVAL_WIDTH: f32 = 70.0;
-const SEND_PROP_NBITS_WIDTH: f32 = 34.0;
-const SEND_PROP_NELEMS_WIDTH: f32 = 34.0;
+const SEND_PROP_NAME_WIDTH: f32 = 160.0;
+const SEND_PROP_TYPE_WIDTH: f32 = 30.0;
+const SEND_PROP_DT_NAME_WIDTH: f32 = 160.0;
+const SEND_PROP_FLAGS_WIDTH: f32 = 160.0;
+const SEND_PROP_HVAL_WIDTH: f32 = 100.0;
+const SEND_PROP_LVAL_WIDTH: f32 = 100.0;
+const SEND_PROP_NBITS_WIDTH: f32 = 35.0;
+const SEND_PROP_NELEMS_WIDTH: f32 = 35.0;
 
 pub struct DataTablesViewModel {
     data_tables: DataTablesData,
@@ -132,12 +132,12 @@ impl ViewModel for DataTablesViewModel {
                                 ui.label(text);
                             });
                             row.col(|ui| {
-                                let text = &class_descs[index].table_name;
-                                ui.label(text);
+                                let mut text = class_descs[index].table_name.clone();
+                                wfn_text_edit_singleline(ui, &mut text, None, false);
                             });
                             row.col(|ui| {
-                                let text = &class_descs[index].network_name;
-                                ui.label(text);
+                                let mut text = class_descs[index].network_name.clone();
+                                wfn_text_edit_singleline(ui, &mut text, None, false);
                             });
                         }
                     );
@@ -177,7 +177,8 @@ impl ViewModel for DataTablesViewModel {
                             self.b_send_table_scroll_next = false;
                         }
 
-                        table_builder.striped(true)
+                        table_builder
+                        //.striped(true)
                         .column(Column::exact(SEND_TABLE_IS_END_WIDTH))
                         .column(Column::exact(SEND_TABLE_NEEDS_DECODER_WIDTH))
                         .column(Column::remainder())
@@ -228,17 +229,18 @@ impl ViewModel for DataTablesViewModel {
                                             ui.label(text);
                                         }
                                     }).1);
-                                    responses.push(row.col(|ui| {
-                                        let text = match &st.net_table_name {
-                                            Some(x) => format!("{}", x),
+                                    let tmp_res = row.col(|ui| {
+                                        let mut text = match &st.net_table_name {
+                                            Some(x) => x.clone(),
                                             None => "None".to_owned()
                                         };
                                         if b_is_active {
-                                            ui.label(RichText::new(text).color(SELECTED_ITEM_COLOUR));
+                                            wfn_text_edit_singleline(ui, &mut text, Some(SELECTED_ITEM_COLOUR), false);
                                         } else {
-                                            ui.label(text);
+                                            wfn_text_edit_singleline(ui, &mut text, None, false);
                                         }
-                                    }).1);
+                                    }).1;
+                                    responses.push(tmp_res);
 
                                     for res in responses {
                                         if res
@@ -277,7 +279,7 @@ impl ViewModel for DataTablesViewModel {
                                 // - num elements
                                 // - priority
                                 TableBuilder::new(ui)
-                                .striped(true)
+                                //.striped(true)
                                 .column(Column::initial(SEND_PROP_NAME_WIDTH).resizable(true))
                                 .column(Column::initial(SEND_PROP_TYPE_WIDTH).resizable(true))
                                 .column(Column::initial(SEND_PROP_DT_NAME_WIDTH).resizable(true))
@@ -324,10 +326,11 @@ impl ViewModel for DataTablesViewModel {
                                             let field = &send_props[index];
 
                                             row.col(|ui| {
-                                                ui.label(match &field.var_name {
-                                                    Some(s) => s,
-                                                    None => "None"
-                                                });
+                                                let mut text = match &field.var_name {
+                                                    Some(s) => s.clone(),
+                                                    None => "None".to_owned()
+                                                };
+                                                wfn_text_edit_singleline(ui, &mut text, None, false);
                                             });
                                             row.col(|ui| {
                                                 ui.label(match &field.sendprop_type {
@@ -336,28 +339,32 @@ impl ViewModel for DataTablesViewModel {
                                                 });
                                             });
                                             row.col(|ui| {
-                                                ui.label(match &field.dt_name {
-                                                    Some(s) => s,
-                                                    None => "None"
-                                                });
+                                                let mut text = match &field.dt_name {
+                                                    Some(s) => s.clone(),
+                                                    None => "None".to_owned()
+                                                };
+                                                wfn_text_edit_singleline(ui, &mut text, None, false);
                                             });
                                             row.col(|ui| {
-                                                ui.label(match &field.flags {
+                                                let mut text = match &field.flags {
                                                     Some(x) => format!("0x{:0>16x}", x),
                                                     None => "None".to_owned()
-                                                });
+                                                };
+                                                wfn_text_edit_singleline(ui, &mut text, None, false);
                                             });
                                             row.col(|ui| {
-                                                ui.label(match &field.high_value {
+                                                let mut text = match &field.high_value {
                                                     Some(x) => format!("0x{:0>8x}", x),
                                                     None => "None".to_owned()
-                                                });
+                                                };
+                                                wfn_text_edit_singleline(ui, &mut text, None, false);
                                             });
                                             row.col(|ui| {
-                                                ui.label(match &field.low_value {
+                                                let mut text = match &field.low_value {
                                                     Some(x) => format!("0x{:0>8x}", x),
                                                     None => "None".to_owned()
-                                                });
+                                                };
+                                                wfn_text_edit_singleline(ui, &mut text, None, false);
                                             });
                                             row.col(|ui| {
                                                 ui.label(match &field.num_bits {

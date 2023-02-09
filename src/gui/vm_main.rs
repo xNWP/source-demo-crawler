@@ -5,7 +5,7 @@ use super::{
     vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
-use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align};
+use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align, epaint::Color32};
 use std::thread::{ self, JoinHandle };
 
 const SHIFT_JUMP_RANGE: usize = 10;
@@ -302,11 +302,8 @@ impl MainViewModel {
             events.push(Event::BeginOpenFile);
         }
     }
-}
 
-impl ViewModel for MainViewModel {
-    fn draw(&mut self, ui: &mut egui::Ui, events: &mut Vec<Event>) {
-        // handle opening file
+    fn handle_opening_file(&mut self, events: &mut Vec<Event>) {
         if let Some(jh) = self.opening_file_join_handle.take() {
             if jh.is_finished() {
                 match jh.join().unwrap() {
@@ -329,8 +326,9 @@ impl ViewModel for MainViewModel {
                 self.opening_file_join_handle = Some(jh);
             }
         }
+    }
 
-        // handle initializing gui
+    fn handle_initializing_gui(&mut self) {
         if let Some(jh) = self.initializing_gui_join_handle.take() {
             if jh.is_finished() {
                 if let Ok(df_vm) = jh.join() {
@@ -340,8 +338,21 @@ impl ViewModel for MainViewModel {
                 self.initializing_gui_join_handle = Some(jh);
             }
         }
+    }
 
+    fn set_styles(ui: &mut egui::Ui) {
+        ui.style_mut()
+            .visuals
+            .extreme_bg_color = Color32::from_gray(32);
+    }
+}
+
+impl ViewModel for MainViewModel {
+    fn draw(&mut self, ui: &mut egui::Ui, events: &mut Vec<Event>) {
+        self.handle_opening_file(events);
+        self.handle_initializing_gui();
         self.handle_keyboard_events(ui.ctx(), events);
+        Self::set_styles(ui);
 
         let mut ui_scale = self.ui_ppt;
         ui.vertical(|ui| {

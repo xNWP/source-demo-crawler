@@ -21,6 +21,8 @@ mod vm_abouthelp;
 mod vm_data_tables;
 // widgets: small tools for displaying common gui components.
 mod w_copyable_field;
+// widget functions: small tools for displaying common gui components implemented as functions.
+mod wfn_text_edit_singleline;
 
 use vm_main::MainViewModel;
 
