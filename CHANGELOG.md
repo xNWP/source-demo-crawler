@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.8.0
 - Features
     - Added changelog to About/Help page.
     - Header Tool and Server Info Tool fields can now be copied by clicking them, closes #17.
