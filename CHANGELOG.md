@@ -6,12 +6,16 @@
     - Header Tool and Server Info Tool fields can now be copied by clicking them, closes #17.
     - Most table fields can now be selected & copied, closes #18.
     - Length data messages (raw binary) can now be saved for detailed analysis.
+    - Added Tasks Tool, the main purpose of this tool is to run various analysis scripts/tools on the parsed demo file, and in the future, allow patching of demo files via guided wizards.
+        - `Dump all NetMessage warnings/errors to console`: NetMessages are messages contained in the Packet and SignOn commands in a demo files frames and sign on frames. This task will iterate through all these messages and print information about any possible warnings or errors that occured while reading the file to the console that is launched with the application.
 - Changes
     - Flags, Hi-Value, and Lo-Value for SendTable fields now display in hex.
 - Internal
     - Set egui to version 0.21.0
     - Set egui_extras to version 0.21.0
-    - Set source-demo-tool to version 0.8.0
+    - Set source-demo-tool to version 0.9.0
+        - Can now open partial/broken demos.
+        - Server Info and Game Events will now be additionally searched for in demo frams (observed in partial/broken demos).
 
 ### v0.7.0
 - Features

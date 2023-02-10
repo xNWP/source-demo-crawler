@@ -13,7 +13,7 @@ impl OpeningFileViewModel {
 
 impl ViewModel for OpeningFileViewModel {
     fn draw(&mut self, ui: &mut egui::Ui, _events: &mut Vec<Event>) {
-        const SPINNER_SIZE: f32 = 30.0;
+        const SPINNER_SIZE: f32 = 48.0;
         let vertical_spacing
             = (ui.available_height()
             - SPINNER_SIZE

@@ -15,7 +15,7 @@ impl PacketDataViewModel {
     pub fn new<F>(
         packet_data: PacketData,
         header_callback: F,
-        game_event_ld: GameEventListData,
+        game_event_ld: Option<GameEventListData>,
     ) -> Self
     where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>)
         + 'static + Send {
@@ -37,13 +37,15 @@ impl PacketDataViewModel {
                 },
                 NetMessage::GameEvent(ged) => {
                     if let Some(id) = ged.event_id {
-                        for k in &game_event_ld.Descriptors {
-                            if let Some(q) = k.event_id {
-                                if q == id {
-                                    if let Some(name) = &k.name {
-                                        return format!("GameEvent({})", name)
+                        if let Some(ge_ld) = &game_event_ld {
+                            for k in &ge_ld.Descriptors {
+                                if let Some(q) = k.event_id {
+                                    if q == id {
+                                        if let Some(name) = &k.name {
+                                            return format!("GameEvent({})", name)
+                                        }
+                                        break
                                     }
-                                    break
                                 }
                             }
                         }

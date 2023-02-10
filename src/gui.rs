@@ -19,6 +19,7 @@ mod vm_server_info_tool;
 mod vm_game_events_tool;
 mod vm_abouthelp;
 mod vm_data_tables;
+mod vm_tasks_tool;
 // widgets: small tools for displaying common gui components.
 mod w_copyable_field;
 // widget functions: small tools for displaying common gui components implemented as functions.
@@ -124,6 +125,7 @@ pub enum Event {
     SetTool(&'static str),
     SelectGameEvent(usize),
     ClearFilter(Filters),
+    EmitNetMsgWarnErrs,
 }
 
 impl Display for Event {
@@ -137,6 +139,7 @@ impl Display for Event {
             Event::SetTool(tool_name) => f.write_fmt(format_args!("SetTool({})", tool_name)),
             Event::SelectGameEvent(index) => f.write_fmt(format_args!("SelectGameEvent({})", index)),
             Event::ClearFilter(filt) => f.write_fmt(format_args!("ClearFilter({:?})", filt)),
+            Event::EmitNetMsgWarnErrs => f.write_str("EmitNetMsgWarnErrs"),
         }
     }
 }

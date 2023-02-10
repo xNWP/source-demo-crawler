@@ -24,7 +24,7 @@ pub struct FramesToolViewModel {
     last_message_index: Option<usize>,
     frame_data: Vec<FrameData>,
     last_hide_none_values: bool,
-    game_event_ld: GameEventListData,
+    game_event_ld: Option<GameEventListData>,
     name: &'static str,
 }
 
@@ -48,7 +48,7 @@ impl FramesToolViewModel {
         name: &'static str,
         demo_frames: Vec<Frame>,
         tick_interval: f32,
-        game_event_ld: GameEventListData
+        game_event_ld: Option<GameEventListData>
     ) -> Self {
         let mut frame_data = Vec::new();
         let mut user_message_it = 0;

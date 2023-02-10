@@ -2,11 +2,11 @@ use super::{
     Event, ViewModel, Focusable,
     vm_demo_file::DemoFileViewModel,
     vm_no_files_open::NoFilesOpenViewModel,
-    vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel,
+    vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel, vm_packet_data::PacketDataViewModel, vm_tasks_tool::TaskRunningViewModel,
 };
-use source_demo_tool::demo_file::DemoFile;
+use source_demo_tool::demo_file::{DemoFile, frame::Command};
 use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align, epaint::Color32};
-use std::thread::{ self, JoinHandle };
+use std::{thread::{ self, JoinHandle }, sync::mpsc, time::SystemTime};
 
 const SHIFT_JUMP_RANGE: usize = 10;
 const INITIAL_UI_SCALE: f32 = 1.15;
@@ -17,6 +17,8 @@ pub struct MainViewModel {
     initializing_gui_join_handle: Option<JoinHandle<DemoFileViewModel>>,
     focused_vm: Focusable,
     ui_ppt: f32,
+    task_join_handle: Option<JoinHandle<()>>,
+    temporary_view_model: Option<Box<dyn ViewModel>>,
 }
 
 impl MainViewModel {
@@ -27,7 +29,66 @@ impl MainViewModel {
             initializing_gui_join_handle: None,
             focused_vm: Focusable::None,
             ui_ppt: INITIAL_UI_SCALE,
+            task_join_handle: None,
+            temporary_view_model: None,
         }
+    }
+
+    fn handle_emit_netmsg_warnerrs(&mut self) -> bool {
+        let df_vm_res = self.inner_view_model
+            .as_any()
+            .downcast_ref::<DemoFileViewModel>();
+
+        match df_vm_res {
+            Some(df_vm) => {
+                // init a bunch of mock packet data viewmodels,
+                // these will emit errors and warnings
+                let mut frames = df_vm.demo_file.frames.clone();
+                frames.append(&mut df_vm.demo_file.sign_on_frames.clone());
+                let game_event_ld = match df_vm.demo_file.get_game_event_list() {
+                    Some(ge_ld) => Some(ge_ld.clone()),
+                    None => None
+                };
+                let (tx_percent_done, rx_percent_done) = mpsc::channel();
+
+                self.task_join_handle = Some(thread::spawn(move || {
+                    let mut last_update_time = SystemTime::now();
+                    for i in 0..frames.len() {
+                        let frame = frames[i].clone();
+                        if let Command::Packet(pd) | Command::SignOn(pd) = frame.command {
+                            let _pd_vm = PacketDataViewModel::new(
+                                pd,
+                                |_,_,_,_| {},
+                                game_event_ld.clone()
+                            );
+
+                            if let Ok(etime) = last_update_time.elapsed() {
+                                if etime.as_millis() >= 50 {
+                                    tx_percent_done.send(
+                                        format!(
+                                            "{}/{} frames",
+                                            i + 1,
+                                            frames.len()
+                                        )
+                                    ).unwrap();
+                                    last_update_time = SystemTime::now();
+                                }
+                            }
+                        }
+                    }
+                }));
+                self.temporary_view_model = Some(Box::new(
+                    TaskRunningViewModel::new(
+                        "Dumping NetMessage warns/errs to console.",
+                        rx_percent_done
+                    )
+                ));
+
+            },
+            None => eprintln!("Got Event::EmitNetMessageWarnErrs but no DemoFileViewModel present.")
+        }
+
+        true
     }
 
     fn handle_begin_open_file(&mut self) {
@@ -354,6 +415,16 @@ impl ViewModel for MainViewModel {
         self.handle_keyboard_events(ui.ctx(), events);
         Self::set_styles(ui);
 
+        if let Some(task_jh) = self.task_join_handle.take() {
+            if task_jh.is_finished() {
+                task_jh.join().unwrap();
+                self.temporary_view_model = None;
+                eprintln!("Task Complete");
+            } else {
+                self.task_join_handle = Some(task_jh);
+            }
+        }
+
         let mut ui_scale = self.ui_ppt;
         ui.vertical(|ui| {
             let avail_width = ui.available_width();
@@ -377,7 +448,12 @@ impl ViewModel for MainViewModel {
                 });
             });
             ui.separator();
-            self.inner_view_model.draw(ui, events);
+
+            if let Some(temp_vm) = self.temporary_view_model.as_mut() {
+                temp_vm.draw(ui, events);
+            } else {
+                self.inner_view_model.draw(ui, events);
+            }
         });
 
         ui.ctx().set_pixels_per_point(self.ui_ppt);
@@ -394,6 +470,7 @@ impl ViewModel for MainViewModel {
                 // let inner grab this event as well
                 return self.inner_view_model.handle_event(event)
             },
+            Event::EmitNetMsgWarnErrs => return self.handle_emit_netmsg_warnerrs(),
             _ => {}
         }
 

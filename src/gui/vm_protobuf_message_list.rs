@@ -7,7 +7,7 @@ use eframe::emath::Align;
 use egui_extras::{ Column, TableBuilder };
 use source_demo_tool::protobuf_message::ProtobufMessageEnumTraits;
 use super::vm_protobuf_message::ProtobufMessageViewModel;
-use source_demo_tool::demo_file::packet::MessageParseReturn;
+use source_demo_tool::demo_file::packet::{MessageParseReturn, FromProtobufMessagesWarnings };
 
 const MESSAGE_LIST_FULL_MAX_WIDTH: f32 = 600.0;
 const MESSAGE_LIST_FULL_MIN_WIDTH: f32 = 420.0;
@@ -84,6 +84,22 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
                         m
                     });
             }
+
+            if let Some(warns) = &msg_return.warnings {
+                Self::print_proto_warns(
+                    &msg_return.message.as_ref().unwrap().to_str(),
+                    0,
+                    warns
+                )
+            }
+
+            if let Some(err) = &msg_return.err {
+                eprintln!(
+                    "== {} ProtobufMessageParseErr ==\n{:?}",
+                    name,
+                    err
+                );
+            }
         }
         let filterable_data: Vec<(&'static str, usize)> = filterable_data.into_iter().collect();
 
@@ -116,6 +132,30 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
             filterable: false,
             active_filter_index: 0,
             message_name_callback: None,
+        }
+    }
+
+    fn print_proto_warns(name: &'static str, depth: usize, warns: &FromProtobufMessagesWarnings) {
+        if warns.has_warnings() {
+            eprintln!(
+                "== {} ProtobufMessageWarnings depth: {} ==",
+                name, depth
+            );
+            if !warns.missing_fields.is_empty() {
+                eprintln!(
+                    "# Missing Fields\n{:#?}",
+                    warns.missing_fields
+                );
+            }
+            if !warns.unknown_fields.is_empty() {
+                eprintln!(
+                    "# Unknown Fields\n{:#?}",
+                    warns.unknown_fields
+                );
+            }
+            for sub_warn in &warns.sub_warnings {
+                Self::print_proto_warns(sub_warn.0, depth + 1, &sub_warn.1);
+            }
         }
     }
 

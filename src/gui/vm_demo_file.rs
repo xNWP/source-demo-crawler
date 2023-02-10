@@ -5,7 +5,10 @@ use super::{
     vm_header_tool::HeaderToolViewModel,
     vm_frames_tool::FramesToolViewModel,
     vm_user_messages_tool::UserMessagesToolViewModel,
-    vm_server_info_tool::ServerInfoViewModel, vm_game_events_tool::GameEventsToolViewModel, vm_abouthelp::AboutHelpViewModel,
+    vm_server_info_tool::ServerInfoViewModel,
+    vm_game_events_tool::GameEventsToolViewModel,
+    vm_abouthelp::AboutHelpViewModel,
+    vm_tasks_tool::TasksToolViewModel,
 };
 use source_demo_tool::demo_file::DemoFile;
 use eframe::{
@@ -62,12 +65,21 @@ impl DemoFileViewModel {
             None => None
         };
         let game_events = demo_file.get_full_game_events();
-        let game_event_ld = demo_file.get_game_event_list().unwrap().clone();
+        let game_event_ld = demo_file.get_game_event_list();
+        let game_event_ld = match game_event_ld {
+            Some(ge_ld) => Some(ge_ld.clone()),
+            None => None
+        };
 
         let tools: Vec<DemoFileTools> = vec![
             DemoFileTools {
                 name: "?",
                 vm: Box::new(AboutHelpViewModel::new()),
+                focus: Focusable::None,
+            },
+            DemoFileTools {
+                name: "🔧",
+                vm: Box::new(TasksToolViewModel{}),
                 focus: Focusable::None,
             },
             DemoFileTools {
@@ -87,7 +99,7 @@ impl DemoFileViewModel {
             },
             DemoFileTools {
                 name: "Sign On Frames",
-                vm: Box::new(FramesToolViewModel::new("SignOnFrames", sign_on_frames, tick_interval, game_event_ld)),
+                vm: Box::new(FramesToolViewModel::new("SignOnFrames", sign_on_frames, tick_interval, game_event_ld.clone())),
                 focus: Focusable::FramesListViewModel,
             },
             DemoFileTools {
@@ -105,7 +117,7 @@ impl DemoFileViewModel {
         Self {
             demo_file,
             tools,
-            active_tool_index: 1, // header tool
+            active_tool_index: 2, // header tool
             hover_tool_index: None,
             inner_events: Vec::new(),
             b_inner_events_sent_last: false,
