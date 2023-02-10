@@ -2,7 +2,7 @@
 
 ### Latest/Nightly (this branch)
 
-### 0.8.1
+### v0.8.2
 - Features
     - SignOn command frames now display their contained netmessages (as they always should have).
     - Frames in the Frames/Sign On Frames Tool can now be filtered by command, and additionally by contained NetMessages, closes #22.

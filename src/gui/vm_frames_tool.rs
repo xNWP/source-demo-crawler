@@ -190,18 +190,30 @@ impl FramesToolViewModel {
 
     pub fn next_frame(&mut self) {
         self.vm_frames_list.next_frame();
+        if let Some(i) = self.vm_frames_list.active_frame {
+            self.select_frame(i);
+        }
     }
 
     pub fn prev_frame(&mut self) {
         self.vm_frames_list.prev_frame();
+        if let Some(i) = self.vm_frames_list.active_frame {
+            self.select_frame(i);
+        }
     }
 
     pub fn first_frame(&mut self) {
         self.vm_frames_list.first_frame();
+        if let Some(i) = self.vm_frames_list.active_frame {
+            self.select_frame(i);
+        }
     }
 
     pub fn last_frame(&mut self) {
         self.vm_frames_list.last_frame();
+        if let Some(i) = self.vm_frames_list.active_frame {
+            self.select_frame(i);
+        }
     }
 }
 
