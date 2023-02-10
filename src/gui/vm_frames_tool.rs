@@ -8,9 +8,9 @@ use super::{
     vm_demo_file::tick_to_time_string,
     table_constants, Filters, vm_data_tables::DataTablesViewModel,
 };
-use source_demo_tool::demo_file::{
+use source_demo_tool::{demo_file::{
     frame::{ Command, Frame }, packet::netmessage::{NetMessage, GameEventListData},
-};
+}, protobuf_message::ProtobufMessageEnumTraits};
 use eframe::egui::{ self, CursorIcon, RichText, Sense };
 use egui_extras::{ TableBuilder, Column };
 
@@ -102,6 +102,10 @@ impl FramesToolViewModel {
             return false
         }
 
+        if self.vm_frames_list.display_frames.binary_search(&index).is_err() {
+            self.vm_frames_list.clear_filters();
+        }
+
         self.vm_frames_list.set_active_frame(index);
         let active_message = &self.vm_frames_list.demo_frames[index];
 
@@ -184,28 +188,20 @@ impl FramesToolViewModel {
         return true
     }
 
-    pub fn next_frame(&mut self) -> bool {
-        if let Some(index) = self.vm_frames_list.active_frame {
-            self.select_frame(index + 1)
-        } else {
-            self.select_frame(0)
-        }
+    pub fn next_frame(&mut self) {
+        self.vm_frames_list.next_frame();
     }
 
-    pub fn prev_frame(&mut self) -> bool {
-        if let Some(index) = self.vm_frames_list.active_frame {
-            self.select_frame(index - 1)
-        } else {
-            self.select_frame(0)
-        }
+    pub fn prev_frame(&mut self) {
+        self.vm_frames_list.prev_frame();
     }
 
     pub fn first_frame(&mut self) {
-        self.select_frame(0);
+        self.vm_frames_list.first_frame();
     }
 
     pub fn last_frame(&mut self) {
-        self.select_frame(self.vm_frames_list.demo_frames.len() - 1);
+        self.vm_frames_list.last_frame();
     }
 }
 
@@ -293,9 +289,12 @@ impl ViewModel for FramesToolViewModel {
 pub struct FramesListViewModel {
     tick_interval: f32,
     demo_frames: Vec<Frame>,
+    display_frames: Vec<usize>,
     active_frame: Option<usize>,
     b_scroll_next: bool,
     frame_tool_name: &'static str,
+    filterable_commands: BTreeMap<u8, (String, bool, usize)>,
+    filterable_net_messages: BTreeMap<u64, (String, bool, usize)>,
 }
 
 impl FramesListViewModel {
@@ -304,30 +303,190 @@ impl FramesListViewModel {
         tick_interval: f32,
         frame_tool_name: &'static str
     ) -> Self {
+        let mut display_frames = Vec::new();
+        display_frames.resize(demo_frames.len(), 0);
+        let mut filterable_commands = BTreeMap::new();
+        let mut filterable_net_messages = BTreeMap::new();
+
+        for i in 0..demo_frames.len() {
+            display_frames[i] = i;
+
+            let command = &demo_frames[i].command;
+            filterable_commands.entry(command.as_u8())
+            .and_modify(|(_, _, count)| {
+                *count += 1;
+            })
+            .or_insert((
+                command.get_command_str().to_owned(),
+                true,
+                1 as usize
+            ));
+
+            let command = &demo_frames[i].command;
+
+            if let Command::Packet(pd) | Command::SignOn(pd)
+                = command {
+                    for nmsg_ret in &pd.network_messages {
+                        if let Some(nmsg) = &nmsg_ret.message {
+                            filterable_net_messages.entry(nmsg.as_u64())
+                            .and_modify(|(_, _, count)| {
+                                *count += 1;
+                            })
+                            .or_insert((
+                                nmsg.to_str().to_owned(),
+                                true,
+                                1 as usize
+                            ));
+                        }
+                    }
+            }
+        }
+
         Self {
             tick_interval,
             demo_frames,
             frame_tool_name,
+            display_frames,
+            filterable_commands,
+            filterable_net_messages,
             active_frame: None,
             b_scroll_next: true,
         }
     }
-}
 
-impl FramesListViewModel {
     fn set_active_frame(&mut self, index: usize) {
         self.active_frame = Some(index);
         self.b_scroll_next = true;
+    }
+
+    fn next_frame(&mut self) {
+        match self.active_frame {
+            Some(active_index) => {
+                if let Ok(i) = self.display_frames.binary_search(&active_index) {
+                    let index = i + 1;
+                    if index < self.display_frames.len() {
+                        self.set_active_frame(self.display_frames[index]);
+                    }
+                }
+            },
+            None => self.first_frame()
+        }
+    }
+
+    fn prev_frame(&mut self) {
+        match self.active_frame {
+            Some(active_index) => {
+                if let Ok(i) = self.display_frames.binary_search(&active_index) {
+                    if i > 0 {
+                        self.set_active_frame(self.display_frames[i - 1]);
+                    }
+                }
+            },
+            None => self.first_frame()
+        }
+    }
+
+    fn first_frame(&mut self) {
+        if let Some(i) = self.display_frames.first() {
+            self.set_active_frame(*i);
+        }
+    }
+
+    fn last_frame(&mut self) {
+        if let Some(i) = self.display_frames.last() {
+            self.set_active_frame(*i);
+        }
+    }
+
+    fn update_display_frames(&self) -> Vec<usize> {
+        let mut display_frames = Vec::new();
+        for i in 0..self.demo_frames.len() {
+            let frame = &self.demo_frames[i];
+            let command_id = frame.command.as_u8();
+
+            let mut b_display_command = true;
+            for (id, (_, display, _)) in &self.filterable_commands {
+                if command_id == *id {
+                    b_display_command = *display;
+                    break;
+                }
+            }
+
+            let mut b_display_message = false;
+            if let Command::Packet(pd) | Command::SignOn(pd) = &frame.command {
+                for nmsg_ret in &pd.network_messages {
+                    if let Some(nmsg) = &nmsg_ret.message {
+                        let nmsg_id = nmsg.as_u64();
+
+                        for (id, (_, display, _)) in &self.filterable_net_messages {
+                            if *id == nmsg_id {
+                                b_display_message |= *display
+                            }
+                        }
+                    }
+                }
+            } else {
+                b_display_message = true;
+            }
+
+            if b_display_command && b_display_message {
+                display_frames.push(i);
+            }
+        }
+        display_frames
+    }
+
+    fn clear_filters(&mut self) {
+        for (_, (_, checked, _)) in &mut self.filterable_commands {
+            *checked = true;
+        }
+        for (_, (_, checked, _)) in &mut self.filterable_net_messages {
+            *checked = true;
+        }
+        self.display_frames = self.update_display_frames();
     }
 }
 
 impl ViewModel for FramesListViewModel {
     fn draw(&mut self, ui: &mut eframe::egui::Ui, events: &mut Vec<super::Event>) {
         // draw ui
+        ui.horizontal(|ui| {
+            let mut b_update_display_frames = false;
+            ui.label("Filters");
+            ui.menu_button("Commands", |ui| {
+                for (_, (name, checked, count)) in &mut self.filterable_commands {
+                    let mut ck = *checked;
+                    if ui.checkbox(&mut ck, format!("{} ({})", name, count)).changed() {
+                        b_update_display_frames = true;
+                        *checked = ck;
+                    }
+                }
+            });
+            ui.menu_button("Net Messages", |ui| {
+                for (_, (name, checked, count)) in &mut self.filterable_net_messages {
+                    let mut ck = *checked;
+                    if ui.checkbox(&mut ck, format!("{} ({})", name, count)).changed() {
+                        b_update_display_frames = true;
+                        *checked = ck;
+                    }
+                }
+            });
+
+            if b_update_display_frames {
+                self.display_frames = self.update_display_frames();
+            }
+        });
+
         let mut table_builder = TableBuilder::new(ui);
 
         if self.b_scroll_next {
-            table_builder = table_builder.scroll_to_row(self.active_frame.unwrap_or(0), None);
+            let active_index = self.display_frames.binary_search(
+                &self.active_frame
+                .unwrap_or(0)
+            );
+            let active_index = active_index.unwrap_or(0);
+
+            table_builder = table_builder.scroll_to_row(active_index, None);
             self.b_scroll_next = false;
         }
 
@@ -357,16 +516,17 @@ impl ViewModel for FramesListViewModel {
             })
         .body(|body| {
             body.rows(table_constants::ROW_HEIGHT,
-                self.demo_frames.len(), |index, mut row| {
-                    let frame = &self.demo_frames[index];
+                self.display_frames.len(), |index, mut row| {
+                    let frame_index = self.display_frames[index];
+                    let frame = &self.demo_frames[frame_index];
                     let mut responses = Vec::new();
                     let is_active_frame = match self.active_frame {
-                        Some(active_index) => index == active_index,
+                        Some(active_index) => frame_index == active_index,
                         None => false
                     };
 
                     responses.push(row.col(|ui| {
-                        let frame = format!("{}", index + 1);
+                        let frame = format!("{}", frame_index + 1);
                         if is_active_frame {
                             ui.label(RichText::new(frame).color(table_constants::SELECTED_ITEM_COLOUR));
                         } else {
@@ -417,7 +577,7 @@ impl ViewModel for FramesListViewModel {
 
                     if is_any_clicked {
                         events.append(&mut vec![
-                            Event::SelectFrame(self.frame_tool_name, index),
+                            Event::SelectFrame(self.frame_tool_name, frame_index),
                             Event::SetFocus(Focusable::FramesListViewModel)
                         ]);
                     }

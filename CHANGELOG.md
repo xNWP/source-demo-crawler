@@ -3,6 +3,11 @@
 ### Latest/Nightly (this branch)
 - Features
     - SignOn command frames now display their contained netmessages (as they always should have).
+    - Frames in the Frames/Sign On Frames Tool can now be filtered by command, and additionally by contained NetMessages, closes #22.
+- Internal
+    - set source-demo-tool to version 0.9.1
+        - Adds some unidentified NetMessages.
+        - Fixes some crashes with partial/broken demos.
 
 ### v0.8.0
 - Features
