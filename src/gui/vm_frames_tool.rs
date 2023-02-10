@@ -57,7 +57,7 @@ impl FramesToolViewModel {
             let mut um_index = BTreeMap::new();
             let mut ge_index = BTreeMap::new();
 
-            if let Command::Packet(pd) = &f.command {
+            if let Command::Packet(pd) | Command::SignOn(pd) = &f.command {
                 for nmsg_it in 0..pd.network_messages.len() {
                     let nmsg_return = &pd.network_messages[nmsg_it];
                     if let Some(nmsg) = &nmsg_return.message {
@@ -105,7 +105,7 @@ impl FramesToolViewModel {
         self.vm_frames_list.set_active_frame(index);
         let active_message = &self.vm_frames_list.demo_frames[index];
 
-        if let Command::Packet(pd) = &active_message.command {
+        if let Command::Packet(pd) | Command::SignOn(pd) = &active_message.command {
             let frame_data = self.frame_data[index].clone();
 
             // carry over "hide None values" + last message index

@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - SignOn command frames now display their contained netmessages (as they always should have).
 
 ### v0.8.0
 - Features
