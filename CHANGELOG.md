@@ -7,7 +7,7 @@
     - Most table fields can now be selected & copied, closes #18.
     - Length data messages (raw binary) can now be saved for detailed analysis.
     - Added Tasks Tool, the main purpose of this tool is to run various analysis scripts/tools on the parsed demo file, and in the future, allow patching of demo files via guided wizards.
-        - `Dump all NetMessage warnings/errors to console`: NetMessages are messages contained in the Packet and SignOn commands in a demo files frames and sign on frames. This task will iterate through all these messages and print information about any possible warnings or errors that occured while reading the file to the console that is launched with the application.
+        - `Dump all NetMessage warnings/errors to console`: NetMessages are messages contained in the Packet and SignOn commands in a demo files frames and sign on frames. This task will iterate through all these messages and print information about any possible warnings or errors that occured while reading the file to the console that is launched with the application. closes #25
 - Changes
     - Flags, Hi-Value, and Lo-Value for SendTable fields now display in hex.
 - Internal
