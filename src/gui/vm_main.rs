@@ -4,7 +4,7 @@ use super::{
     vm_no_files_open::NoFilesOpenViewModel,
     vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel, vm_packet_data::PacketDataViewModel, vm_tasks_tool::TaskRunningViewModel,
 };
-use source_demo_tool::demo_file::{DemoFile, frame::Command};
+use source_demo_tool::demo_file::{ DemoFile, frame::Command };
 use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align, epaint::Color32};
 use std::{thread::{ self, JoinHandle }, sync::mpsc, time::SystemTime};
 
@@ -45,10 +45,6 @@ impl MainViewModel {
                 // these will emit errors and warnings
                 let mut frames = df_vm.demo_file.frames.clone();
                 frames.append(&mut df_vm.demo_file.sign_on_frames.clone());
-                let game_event_ld = match df_vm.demo_file.get_game_event_list() {
-                    Some(ge_ld) => Some(ge_ld.clone()),
-                    None => None
-                };
                 let (tx_percent_done, rx_percent_done) = mpsc::channel();
 
                 self.task_join_handle = Some(thread::spawn(move || {
@@ -58,8 +54,7 @@ impl MainViewModel {
                         if let Command::Packet(pd) | Command::SignOn(pd) = frame.command {
                             let _pd_vm = PacketDataViewModel::new(
                                 pd,
-                                |_,_,_,_| {},
-                                game_event_ld.clone()
+                                None
                             );
 
                             if let Ok(etime) = last_update_time.elapsed() {

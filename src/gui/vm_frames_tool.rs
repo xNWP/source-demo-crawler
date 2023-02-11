@@ -9,10 +9,10 @@ use super::{
     table_constants, Filters, vm_data_tables::DataTablesViewModel,
 };
 use source_demo_tool::{demo_file::{
-    frame::{ Command, Frame }, packet::netmessage::{NetMessage, GameEventListData},
+    frame::{ Command, Frame }, packet::{netmessage::{NetMessage, GameEventListData}, MessageParseReturn},
 }, protobuf_message::ProtobufMessageEnumTraits};
-use eframe::egui::{ self, CursorIcon, RichText, Sense };
-use egui_extras::{ TableBuilder, Column };
+use eframe::{egui::{ self, CursorIcon, RichText, Sense }, epaint::ColorImage};
+use egui_extras::{ TableBuilder, Column, RetainedImage };
 
 const FRAMES_PLAYER_SLOT_WIDTH: f32 = 80.0;
 const MAX_FRAMES_LIST_WIDTH: f32 = 500.0;
@@ -125,42 +125,54 @@ impl FramesToolViewModel {
 
             let mut packet_data = PacketDataViewModel::new(
                 pd.clone(),
-                move |nmsg_index, ui, events, msg| {
-                    if let Some(nmsg) = &msg.message {
-                        if let NetMessage::UserMessage(_) = nmsg {
-                            let user_message_index = frame_data.user_message_index.as_ref().unwrap();
-                            let user_message_index = user_message_index[&nmsg_index];
-
-                            ui.horizontal(|ui| {
-                                ui.label(format!("User Message Index: {}", user_message_index));
-                                if ui.button("Goto").clicked() {
-                                    events.append(&mut vec![
-                                        Event::SetTool("User Messages"),
-                                        Event::ClearFilter(Filters::UserMessages),
-                                        Event::SelectMessage("user_messages", user_message_index)
-                                    ]);
-                                }
-                            });
-                        } else
-                        if let NetMessage::GameEvent(_) = nmsg {
-                            let game_event_index = frame_data.game_event_index.as_ref().unwrap();
-                            let game_event_index = game_event_index[&nmsg_index];
-
-                            ui.horizontal(|ui| {
-                                ui.label(format!("Game Event Index: {}", game_event_index));
-                                if ui.button("Goto").clicked() {
-                                    events.append(&mut vec![
-                                        Event::SetTool("Game Events"),
-                                        Event::ClearFilter(Filters::GameEvents),
-                                        Event::SelectGameEvent(game_event_index)
-                                    ]);
-                                }
-                            });
-                        }
-                    }
-                },
                 self.game_event_ld.clone()
             );
+            packet_data.set_message_header_callback(move |nmsg_index, ui: &mut egui::Ui, events: &mut Vec<Event>, msg: &MessageParseReturn<NetMessage>| {
+                if let Some(nmsg) = &msg.message {
+                    if let NetMessage::UserMessage(_) = nmsg {
+                        let user_message_index = frame_data.user_message_index.as_ref().unwrap();
+                        let user_message_index = user_message_index[&nmsg_index];
+
+                        ui.horizontal(|ui| {
+                            ui.label(format!("User Message Index: {}", user_message_index));
+                            if ui.button("Goto").clicked() {
+                                events.append(&mut vec![
+                                    Event::SetTool("User Messages"),
+                                    Event::ClearFilter(Filters::UserMessages),
+                                    Event::SelectMessage("user_messages", user_message_index)
+                                ]);
+                            }
+                        });
+                    } else
+                    if let NetMessage::GameEvent(_) = nmsg {
+                        let game_event_index = frame_data.game_event_index.as_ref().unwrap();
+                        let game_event_index = game_event_index[&nmsg_index];
+
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Game Event Index: {}", game_event_index));
+                            if ui.button("Goto").clicked() {
+                                events.append(&mut vec![
+                                    Event::SetTool("Game Events"),
+                                    Event::ClearFilter(Filters::GameEvents),
+                                    Event::SelectGameEvent(game_event_index)
+                                ]);
+                            }
+                        });
+                    }
+                }
+            });
+            packet_data.set_message_footer_callback(move |_, ui: &mut egui::Ui, _, msg: &MessageParseReturn<NetMessage>| {
+                if let Some(nmsg) = &msg.message {
+                    if let NetMessage::AvatarData(ad) = nmsg {
+                        let image = ColorImage::from_rgb(
+                            [64, 64],
+                            ad.rgb_bytes.as_ref().unwrap().as_slice()
+                        );
+                        let retained_image = RetainedImage::from_color_image("PlayerAvatar", image);
+                        retained_image.show(ui);
+                    }
+                }
+            });
 
             if let Some(index) = self.last_message_index {
                 if index < packet_data.vm_message_list.messages.len() {

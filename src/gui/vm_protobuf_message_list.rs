@@ -35,6 +35,10 @@ pub struct ProtobufMessageListViewModel<MessageType: ProtobufMessageEnumTraits> 
         dyn Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
         + Send
     >>,
+    message_footer_callback: Option<Box<
+        dyn Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
+        + Send
+    >>,
     message_ticks: Option<Vec<i32>>,
     tick_interval: Option<f32>,
     filterable: bool,
@@ -127,6 +131,7 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
             active_message: None,
             b_scroll_next: true,
             message_header_callback: None,
+            message_footer_callback: None,
             message_ticks: None,
             tick_interval: None,
             filterable: false,
@@ -178,6 +183,12 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
     where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
     + Send + 'static {
         self.message_header_callback = Some(Box::new(callback));
+    }
+
+    pub fn set_message_footer_callback<F>(&mut self, callback: F)
+    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<MessageType>)
+    + Send + 'static {
+        self.message_footer_callback = Some(Box::new(callback));
     }
 
     pub fn set_message_name_callback<F>(&mut self, callback: F)
@@ -498,7 +509,24 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ViewModel for Pro
                             msg_header_cb(active_index, ui, events, msg_ref);
                         }
 
-                        pm_vm.draw(ui, events);
+                        const FOOTER_HEIGHT: f32 = 200.0;
+                        let avail_height = ui.available_height();
+
+                        ui.vertical(|ui| {
+                            if self.message_footer_callback.is_some() {
+                                ui.set_height(avail_height - FOOTER_HEIGHT);
+                            }
+                            pm_vm.draw(ui, events);
+                        });
+
+                        ui.vertical(|ui| {
+                            ui.set_height(FOOTER_HEIGHT);
+                            if let Some(msg_header_cb) = &mut self.message_footer_callback {
+                                let active_index = self.active_message.unwrap();
+                                let msg_ref = &self.messages["None"][&active_index];
+                                msg_header_cb(active_index, ui, events, msg_ref);
+                            }
+                        });
                     }
                 });
             });

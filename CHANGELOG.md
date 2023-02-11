@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - AvatarData now shows the avatar when selected.
 - Bug Fixes
     - Fix DataTables viewmodel sizing past the bottom of the window.
 - Internal

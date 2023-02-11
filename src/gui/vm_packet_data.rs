@@ -12,17 +12,13 @@ pub struct PacketDataViewModel {
 }
 
 impl PacketDataViewModel {
-    pub fn new<F>(
+    pub fn new(
         packet_data: PacketData,
-        header_callback: F,
         game_event_ld: Option<GameEventListData>,
-    ) -> Self
-    where F: Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>)
-        + 'static + Send {
+    ) -> Self {
         let header = packet_data.header;
         let mut vm_message_list
             = ProtobufMessageListViewModel::new("packet_data_messages", packet_data.network_messages);
-        vm_message_list.set_message_header_callback(header_callback);
 
         let umsg_id_map = UserMessage::get_id_map();
         vm_message_list.set_message_name_callback(move |nmsg| {
@@ -60,6 +56,14 @@ impl PacketDataViewModel {
             header,
             vm_message_list,
         }
+    }
+
+    pub fn set_message_header_callback(&mut self, callback: impl Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>) + Send + 'static) {
+        self.vm_message_list.set_message_header_callback(callback);
+    }
+
+    pub fn set_message_footer_callback(&mut self, callback: impl Fn(usize, &mut egui::Ui, &mut Vec<Event>, &MessageParseReturn<NetMessage>) + Send + 'static) {
+        self.vm_message_list.set_message_footer_callback(callback);
     }
 }
 
