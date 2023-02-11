@@ -1,6 +1,10 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Internal
+    - set source-demo-tool to version 0.9.2
+        - Adds + modifies User/Net messages.
+        - Adds repeated_fields warnings.
 
 ### v0.8.2
 - Features

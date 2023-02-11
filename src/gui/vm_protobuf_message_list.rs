@@ -153,6 +153,12 @@ impl<MessageType: ProtobufMessageEnumTraits + Clone + 'static> ProtobufMessageLi
                     warns.unknown_fields
                 );
             }
+            if !warns.repeated_fields.is_empty() {
+                eprintln!(
+                    "# Repeated Fields\n{:?}",
+                    warns.repeated_fields
+                );
+            }
             for sub_warn in &warns.sub_warnings {
                 Self::print_proto_warns(sub_warn.0, depth + 1, &sub_warn.1);
             }
