@@ -102,7 +102,8 @@ impl ViewModel for DataTablesViewModel {
             // - network name
             ui.vertical(|ui| {
                 ui.set_width(avail_space.x);
-                ui.set_height(avail_space.y);
+                let height = ui.available_height();
+                ui.set_height(height);
                 ui.heading("Class Descriptions");
 
                 let class_descs = &self.data_tables.class_descriptions;
@@ -153,6 +154,7 @@ impl ViewModel for DataTablesViewModel {
                 let height = ui.available_height();
                 ui.set_height(height);
                 ui.heading("Send Tables");
+                let height = ui.available_height();
 
                 egui::Grid::new(ui.next_auto_id())
                 .show(ui, |ui| {
@@ -262,7 +264,7 @@ impl ViewModel for DataTablesViewModel {
                         ui.push_id(ui.next_auto_id(), |ui| {
                             ui.vertical(|ui| {
                                 ui.set_width(avail_space.x);
-                                ui.set_height(height / 2.0 - 20.0);
+                                ui.set_height(height / 2.0);
                                 ui.heading("Properties/Fields");
 
                                 let active_st = &self.data_tables.send_tables[active_index];

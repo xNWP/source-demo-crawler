@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Bug Fixes
+    - Fix DataTables viewmodel sizing past the bottom of the window.
 - Internal
     - set source-demo-tool to version 0.9.2
         - Adds + modifies User/Net messages.
