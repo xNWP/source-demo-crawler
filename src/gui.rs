@@ -1,4 +1,4 @@
-use std::{fmt::Display, path::PathBuf, any::Any};
+use std::{path::PathBuf, any::Any};
 
 use eframe::egui;
 
@@ -84,7 +84,7 @@ impl eframe::App for NewCrawlerApp {
         if !unhandled_events.is_empty() {
             eprintln!("Unhandled events on frame: {}", self.frame_counter);
             for event in unhandled_events {
-                eprintln!("Event: {}", event);
+                eprintln!("Event: {:?}", event);
             }
         }
 
@@ -116,6 +116,7 @@ pub enum Filters {
     GameEvents,
 }
 
+#[derive(Debug)]
 pub enum Event {
     BeginOpenFile,
     NewFile(PathBuf),
@@ -128,6 +129,7 @@ pub enum Event {
     EmitNetMsgWarnErrs,
 }
 
+/*
 impl Display for Event {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
@@ -143,6 +145,7 @@ impl Display for Event {
         }
     }
 }
+*/
 
 pub trait ViewModel: Send {
     fn draw(&mut self, ui: &mut egui::Ui, events: &mut Vec<Event>);
