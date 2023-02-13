@@ -2,9 +2,13 @@ use super::{
     Event, ViewModel, Focusable,
     vm_demo_file::DemoFileViewModel,
     vm_no_files_open::NoFilesOpenViewModel,
-    vm_opening_files::OpeningFileViewModel, vm_frames_tool::FramesToolViewModel, vm_user_messages_tool::UserMessagesToolViewModel, vm_game_events_tool::GameEventsToolViewModel, vm_packet_data::PacketDataViewModel, vm_tasks_tool::TaskRunningViewModel,
+    vm_opening_files::OpeningFileViewModel,
+    vm_frames_tool::FramesToolViewModel,
+    vm_user_messages_tool::UserMessagesToolViewModel,
+    vm_game_events_tool::GameEventsToolViewModel,
+    vm_tasks_tool::TaskRunningViewModel,
 };
-use source_demo_tool::demo_file::{ DemoFile, frame::Command };
+use source_demo_tool::demo_file::{ DemoFile, frame::Command, packet::{FromProtobufMessagesWarnings, ParseMessageErr} };
 use eframe::{egui::{ self, Key, Modifiers, Context, Layout }, emath::Align, epaint::Color32};
 use std::{thread::{ self, JoinHandle }, sync::mpsc, time::SystemTime};
 
@@ -41,8 +45,6 @@ impl MainViewModel {
 
         match df_vm_res {
             Some(df_vm) => {
-                // init a bunch of mock packet data viewmodels,
-                // these will emit errors and warnings
                 let mut frames = df_vm.demo_file.frames.clone();
                 frames.append(&mut df_vm.demo_file.sign_on_frames.clone());
                 let (tx_percent_done, rx_percent_done) = mpsc::channel();
@@ -52,22 +54,28 @@ impl MainViewModel {
                     for i in 0..frames.len() {
                         let frame = frames[i].clone();
                         if let Command::Packet(pd) | Command::SignOn(pd) = frame.command {
-                            let _pd_vm = PacketDataViewModel::new(
-                                pd,
-                                None
-                            );
-
-                            if let Ok(etime) = last_update_time.elapsed() {
-                                if etime.as_millis() >= 50 {
-                                    tx_percent_done.send(
-                                        format!(
-                                            "{}/{} frames",
-                                            i + 1,
-                                            frames.len()
-                                        )
-                                    ).unwrap();
-                                    last_update_time = SystemTime::now();
+                            for nmsg_ret in &pd.network_messages {
+                                if let Some(warns) = &nmsg_ret.warnings {
+                                    print_proto_warns(format!("PacketData/SignOn_NetMessage[{}]", i).as_str(), warns);
+                                } else if let Some(err) = &nmsg_ret.err {
+                                    print_proto_err(format!("PacketData/SignOn_NetMessage[{}]", i).as_str(), err);
                                 }
+                            }
+
+                        } /*else if let Command::DataTables(dtd) = frame.command {
+
+                        }*/
+
+                        if let Ok(etime) = last_update_time.elapsed() {
+                            if etime.as_millis() >= 50 {
+                                tx_percent_done.send(
+                                    format!(
+                                        "{}/{} frames",
+                                        i + 1,
+                                        frames.len()
+                                    )
+                                ).unwrap();
+                                last_update_time = SystemTime::now();
                             }
                         }
                     }
@@ -474,4 +482,46 @@ impl ViewModel for MainViewModel {
 
     fn as_any(&self) -> &dyn std::any::Any { self }
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
+}
+
+fn print_proto_warns_inner(name: &str, depth: usize, warns: &FromProtobufMessagesWarnings) {
+    if warns.has_warnings() {
+        eprintln!(
+            "== {} ProtobufMessageWarnings depth: {} ==",
+            name, depth
+        );
+        if !warns.missing_fields.is_empty() {
+            eprintln!(
+                "# Missing Fields\n{:#?}",
+                warns.missing_fields
+            );
+        }
+        if !warns.unknown_fields.is_empty() {
+            eprintln!(
+                "# Unknown Fields\n{:#?}",
+                warns.unknown_fields
+            );
+        }
+        if !warns.repeated_fields.is_empty() {
+            eprintln!(
+                "# Repeated Fields\n{:?}",
+                warns.repeated_fields
+            );
+        }
+        for sub_warn in &warns.sub_warnings {
+            print_proto_warns_inner(sub_warn.0, depth + 1, &sub_warn.1);
+        }
+    }
+}
+
+pub fn print_proto_warns(name: &str, warns: &FromProtobufMessagesWarnings) {
+    print_proto_warns_inner(name, 0, warns);
+}
+
+pub fn print_proto_err(name: &str, err: &ParseMessageErr) {
+    eprintln!(
+        "== {} ProtobufMessageParseErr ==\n{:?}",
+        name,
+        err
+    );
 }

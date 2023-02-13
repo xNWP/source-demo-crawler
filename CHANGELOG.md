@@ -3,6 +3,8 @@
 ### Latest/Nightly (this branch)
 - Features
     - AvatarData now shows the avatar when selected.
+- Changes
+    - `Dump all NetMessage warnings/errors to console`: simpler code path with added indexing in named output.
 - Bug Fixes
     - Fix DataTables viewmodel sizing past the bottom of the window.
 - Internal
