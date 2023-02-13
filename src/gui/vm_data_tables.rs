@@ -1,6 +1,6 @@
 use source_demo_tool::demo_file::frame::DataTablesData;
 
-use super::{ Event, ViewModel, table_constants::{HEADER_HEIGHT, ROW_HEIGHT, SELECTED_ITEM_COLOUR}, Focusable, wfn_text_edit_singleline::wfn_text_edit_singleline };
+use super::{ Event, ViewModel, table_constants::{HEADER_HEIGHT, ROW_HEIGHT, SELECTED_ITEM_COLOUR}, Focusable, wfn_text_edit_singleline::wfn_text_edit_singleline, vm_main::print_proto_warns };
 use egui_extras::{ TableBuilder, Column };
 use eframe::{egui::{self, Sense, RichText, CursorIcon, Layout}, emath::Align};
 
@@ -41,6 +41,11 @@ impl DataTablesViewModel {
         }
         self.b_send_table_scroll_next = true;
         self.active_send_table_index = Some(index);
+
+        // print warns
+        let warns = &self.data_tables.send_tables[index].1;
+        print_proto_warns("DataTablesVM", warns);
+
         return true
     }
 
@@ -210,7 +215,7 @@ impl ViewModel for DataTablesViewModel {
                                     };
 
                                     responses.push(row.col(|ui| {
-                                        let text = match st.is_end {
+                                        let text = match st.0.is_end {
                                             Some(x) => format!("{}", x),
                                             None => "None".to_owned()
                                         };
@@ -221,7 +226,7 @@ impl ViewModel for DataTablesViewModel {
                                         }
                                     }).1);
                                     responses.push(row.col(|ui| {
-                                        let text = match st.needs_decoder {
+                                        let text = match st.0.is_end {
                                             Some(x) => format!("{}", x),
                                             None => "None".to_owned()
                                         };
@@ -232,7 +237,7 @@ impl ViewModel for DataTablesViewModel {
                                         }
                                     }).1);
                                     let tmp_res = row.col(|ui| {
-                                        let mut text = match &st.net_table_name {
+                                        let mut text = match &st.0.net_table_name {
                                             Some(x) => x.clone(),
                                             None => "None".to_owned()
                                         };
@@ -267,7 +272,7 @@ impl ViewModel for DataTablesViewModel {
                                 ui.set_height(height / 2.0);
                                 ui.heading("Properties/Fields");
 
-                                let active_st = &self.data_tables.send_tables[active_index];
+                                let active_st = &self.data_tables.send_tables[active_index].0;
                                 let send_props = &active_st.SendProp;
 
                                 // Send Prop

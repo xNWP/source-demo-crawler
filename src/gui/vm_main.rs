@@ -56,15 +56,17 @@ impl MainViewModel {
                         if let Command::Packet(pd) | Command::SignOn(pd) = frame.command {
                             for nmsg_ret in &pd.network_messages {
                                 if let Some(warns) = &nmsg_ret.warnings {
-                                    print_proto_warns(format!("PacketData/SignOn_NetMessage[{}]", i).as_str(), warns);
+                                    print_proto_warns(format!("PacketData/SignOnData_NetMessage[{}]", i).as_str(), warns);
                                 } else if let Some(err) = &nmsg_ret.err {
-                                    print_proto_err(format!("PacketData/SignOn_NetMessage[{}]", i).as_str(), err);
+                                    print_proto_err(format!("PacketData/SignOnData_NetMessage[{}]", i).as_str(), err);
                                 }
                             }
 
-                        } /*else if let Command::DataTables(dtd) = frame.command {
-
-                        }*/
+                        } else if let Command::DataTables(dtd) = &frame.command {
+                            for (_, warns) in &dtd.send_tables {
+                                print_proto_warns(format!("DataTablesData_NetMessage[{}]", i).as_str(), warns)
+                            }
+                        }
 
                         if let Ok(etime) = last_update_time.elapsed() {
                             if etime.as_millis() >= 50 {
