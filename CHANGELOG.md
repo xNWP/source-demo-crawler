@@ -3,6 +3,7 @@
 ### Latest/Nightly (this branch)
 - Features
     - AvatarData now shows the avatar when selected.
+    - Added `Dump all UserMessage warnings/errors to console`: Previously this was done as the GUI was initialized, or when selecting an individual user message in the User Messages Tool, which it still does.
 - Changes
     - `Dump all NetMessage warnings/errors to console`: simpler code path with added indexing in named output.
 - Bug Fixes

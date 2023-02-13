@@ -33,6 +33,13 @@ impl ViewModel for TasksToolViewModel {
                     // vm_main handles this
                     events.push(Event::EmitNetMsgWarnErrs);
                 }
+
+                if ui.add(egui::Button::new("Dump all UserMessage warnings/errors to console")
+                    .min_size(button_size)
+                ).clicked() {
+                    // vm_main handles this
+                    events.push(Event::EmitUserMsgWarnErrs);
+                }
             }
         );
     }

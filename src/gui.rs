@@ -127,6 +127,7 @@ pub enum Event {
     SelectGameEvent(usize),
     ClearFilter(Filters),
     EmitNetMsgWarnErrs,
+    EmitUserMsgWarnErrs,
 }
 
 /*

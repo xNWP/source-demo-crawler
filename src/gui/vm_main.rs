@@ -94,6 +94,55 @@ impl MainViewModel {
         true
     }
 
+    fn handle_emit_usermsg_warnerrs(&mut self) -> bool {
+        let df_vm_res = self.inner_view_model
+            .as_any()
+            .downcast_ref::<DemoFileViewModel>();
+
+        match df_vm_res {
+            Some(df_vm) => {
+                let messages = df_vm.demo_file.get_user_messages();
+                let (tx_percent_done, rx_percent_done) = mpsc::channel();
+
+                self.task_join_handle = Some(thread::spawn(move || {
+                    let mut last_update_time = SystemTime::now();
+                    for i in 0..messages.len() {
+                        let msg = &messages[i].message_return;
+
+                        if let Some(warns) = &msg.warnings {
+                            print_proto_warns(format!("UserMessage[{}]", i).as_str(), warns);
+                        } else if let Some(err) = &msg.err {
+                            print_proto_err(format!("UserMessage[{}]", i).as_str(), err);
+                        }
+
+                        if let Ok(etime) = last_update_time.elapsed() {
+                            if etime.as_millis() >= 50 {
+                                tx_percent_done.send(
+                                    format!(
+                                        "{}/{} messages",
+                                        i + 1,
+                                        messages.len()
+                                    )
+                                ).unwrap();
+                                last_update_time = SystemTime::now();
+                            }
+                        }
+                    }
+                }));
+                self.temporary_view_model = Some(Box::new(
+                    TaskRunningViewModel::new(
+                        "Dumping UserMessage warns/errs to console.",
+                        rx_percent_done
+                    )
+                ));
+
+            },
+            None => eprintln!("Got Event::EmitUserMessageWarnErrs but no DemoFileViewModel present.")
+        }
+
+        true
+    }
+
     fn handle_begin_open_file(&mut self) {
         let file = rfd::FileDialog::new()
             .add_filter("Source Demo File", &["dem"])
@@ -474,6 +523,7 @@ impl ViewModel for MainViewModel {
                 return self.inner_view_model.handle_event(event)
             },
             Event::EmitNetMsgWarnErrs => return self.handle_emit_netmsg_warnerrs(),
+            Event::EmitUserMsgWarnErrs => return self.handle_emit_usermsg_warnerrs(),
             _ => {}
         }
 
